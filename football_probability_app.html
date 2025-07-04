@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Probabilidades - Futebol</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .teams-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .team-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .team-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .team-panel.home {
+            border-left: 5px solid #28a745;
+        }
+
+        .team-panel.away {
+            border-right: 5px solid #dc3545;
+        }
+
+        .team-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .team-header h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .team-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .team-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .matches-section {
+            margin-top: 25px;
+        }
+
+        .matches-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .matches-header h3 {
+            color: #495057;
+            font-size: 1.3rem;
+        }
+
+        .add-match-btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .add-match-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .match-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .match-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .location-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .location-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .location-btn.active.home {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .location-btn.active.away {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .score-input {
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .score-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .calculate-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(40, 167, 69, 0.4);
+        }
+
+        .calculate-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .results-header h2 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .result-box {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .result-box:hover {
+            transform: scale(1.05);
+        }
+
+        .result-box.high {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .result-box.medium {
+            background: #cce7ff;
+            border-color: #007bff;
+            color: #004085;
+        }
+
+        .result-box.low {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .result-score {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-probability {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-color.high {
+            background: #28a745;
+        }
+
+        .legend-color.medium {
+            background: #007bff;
+        }
+
+        .legend-color.low {
+            background: #ffc107;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .teams-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .match-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .legend {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .calculate-btn {
+                padding: 15px 40px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Calculadora de Probabilidades</h1>
+            <p>Analise históricos e preveja resultados de partidas de futebol</p>
+        </div>
+
+        <div class="main-content">
+            <div class="teams-section">
+                <div class="team-panel home">
+                    <div class="team-header">
+                        <h2>🏠 Time da Casa</h2>
+                        <input type="text" class="team-input" id="homeTeam" placeholder="Nome do time da casa">
+                    </div>
+                    <div class="matches-section">
+                        <div class="matches-header">
+                            <h3>Partidas Anteriores</h3>
+                            <button class="add-match-btn" onclick="addMatch('home')">+ Adicionar Partida</button>
+                        </div>
+                        <div id="homeMatches"></div>
+                    </div>
+                </div>
+
+                <div class="team-panel away">
+                    <div class="team-header">
+                        <h2>✈️ Time Visitante</h2>
+                        <input type="text" class="team-input" id="awayTeam" placeholder="Nome do time visitante">
+                    </div>
+                    <div class="matches-section">
+                        <div class="matches-header">
+                            <h3>Partidas Anteriores</h3>
+                            <button class="add-match-btn" onclick="addMatch('away')">+ Adicionar Partida</button>
+                        </div>
+                        <div id="awayMatches"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculate-section">
+                <button class="calculate-btn" onclick="calculateProbabilities()">
+                    🧮 Calcular Probabilidades
+                </button>
+            </div>
+
+            <div class="results-section" id="results" style="display: none;">
+                <div class="results-header">
+                    <h2>📊 Probabilidades de Resultados</h2>
+                    <p>Baseado no histórico das equipes</p>
+                </div>
+                <div class="results-grid" id="resultsGrid"></div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color high"></div>
+                        <span>Alta (≥80%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color medium"></div>
+                        <span>Média (59-79%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color low"></div>
+                        <span>Baixa (<59%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let homeMatches = [];
+        let awayMatches = [];
+        let matchCounter = 0;
+
+        function addMatch(team) {
+            const matchId = `match_${team}_${matchCounter++}`;
+            const matchesContainer = document.getElementById(`${team}Matches`);
+            
+            const matchElement = document.createElement('div');
+            matchElement.className = 'match-item';
+            matchElement.id = matchId;
+            
+            matchElement.innerHTML = `
+                <div class="match-controls">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">Local da Partida:</label>
+                        <div class="location-buttons">
+                            <button class="location-btn" onclick="setLocation('${matchId}', 'home')">Casa</button>
+                            <button class="location-btn" onclick="setLocation('${matchId}', 'away')">Visitante</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">Placar (Casa-Visitante):</label>
+                        <input type="text" class="score-input" placeholder="ex: 2-1" pattern="[0-9]+-[0-9]+">
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <button class="remove-btn" onclick="removeMatch('${matchId}', '${team}')">🗑️ Remover</button>
+                </div>
+            `;
+            
+            matchesContainer.appendChild(matchElement);
+        }
+
+        function setLocation(matchId, location) {
+            const matchElement = document.getElementById(matchId);
+            const buttons = matchElement.querySelectorAll('.location-btn');
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('active', 'home', 'away');
+            });
+            
+            buttons.forEach(btn => {
+                if ((location === 'home' && btn.textContent === 'Casa') ||
+                    (location === 'away' && btn.textContent === 'Visitante')) {
+                    btn.classList.add('active', location);
+                }
+            });
+        }
+
+        function removeMatch(matchId, team) {
+            const matchElement = document.getElementById(matchId);
+            matchElement.remove();
+        }
+
+        function collectMatches(team) {
+            const matchesContainer = document.getElementById(`${team}Matches`);
+            const matchElements = matchesContainer.querySelectorAll('.match-item');
+            const matches = [];
+            
+            matchElements.forEach(matchElement => {
+                const activeLocationBtn = matchElement.querySelector('.location-btn.active');
+                const scoreInput = matchElement.querySelector('.score-input');
+                
+                if (activeLocationBtn && scoreInput.value.trim()) {
+                    const location = activeLocationBtn.classList.contains('home') ? 'home' : 'away';
+                    const score = scoreInput.value.trim();
+                    
+                    if (score.match(/^\d+-\d+$/)) {
+                        matches.push({ location, score });
+                    }
+                }
+            });
+            
+            return matches;
+        }
+
+        function calculateGoalDistribution(matches, isHome) {
+            const goalsFor = [];
+            const goalsAgainst = [];
+            
+            matches.forEach(match => {
+                const [homeGoals, awayGoals] = match.score.split('-').map(Number);
+                
+                if ((match.location === 'home' && isHome) || (match.location === 'away' && !isHome)) {
+                    // Time jogando em casa (para time da casa) ou visitante (para time visitante)
+                    if (isHome) {
+                        goalsFor.push(homeGoals);
+                        goalsAgainst.push(awayGoals);
+                    } else {
+                        goalsFor.push(awayGoals);
+                        goalsAgainst.push(homeGoals);
+                    }
+                } else {
+                    // Time jogando fora de casa
+                    if (isHome) {
+                        goalsFor.push(awayGoals);
+                        goalsAgainst.push(homeGoals);
+                    } else {
+                        goalsFor.push(homeGoals);
+                        goalsAgainst.push(awayGoals);
+                    }
+                }
+            });
+            
+            return { goalsFor, goalsAgainst };
+        }
+
+        function poissonProbability(lambda, k) {
+            return Math.exp(-lambda) * Math.pow(lambda, k) / factorial(k);
+        }
+
+        function factorial(n) {
+            if (n <= 1) return 1;
+            return n * factorial(n - 1);
+        }
+
+        function calculateProbabilities() {
+            const homeTeamName = document.getElementById('homeTeam').value.trim();
+            const awayTeamName = document.getElementById('awayTeam').value.trim();
+            
+            if (!homeTeamName || !awayTeamName) {
+                showError('Por favor, insira os nomes dos dois times.');
+                return;
+            }
+            
+            const homeMatchesData = collectMatches('home');
+            const awayMatchesData = collectMatches('away');
+            
+            if (homeMatchesData.length === 0 || awayMatchesData.length === 0) {
+                showError('Por favor, adicione pelo menos uma partida para cada time.');
+                return;
+            }
+            
+            // Calcular distribuição de gols
+            const homeStats = calculateGoalDistribution(homeMatchesData, true);
+            const awayStats = calculateGoalDistribution(awayMatchesData, false);
+            
+            if (homeStats.goalsFor.length === 0 || awayStats.goalsFor.length === 0) {
+                showError('Dados insuficientes para calcular as probabilidades.');
+                return;
+            }
+            
+            // Calcular médias (lambda para Poisson)
+            const homeLambda = homeStats.goalsFor.reduce((a, b) => a + b, 0) / homeStats.goalsFor.length;
+            const awayLambda = awayStats.goalsFor.reduce((a, b) => a + b, 0) / awayStats.goalsFor.length;
+            
+            // Calcular probabilidades para cada resultado
+            const results = [];
+            
+            for (let homeGoals = 0; homeGoals <= 3; homeGoals++) {
+                for (let awayGoals = 0; awayGoals <= 3; awayGoals++) {
+                    const homeProb = poissonProbability(homeLambda, homeGoals);
+                    const awayProb = poissonProbability(awayLambda, awayGoals);
+                    const combinedProb = homeProb * awayProb;
+                    
+                    results.push({
+                        score: `${homeGoals}-${awayGoals}`,
+                        probability: combinedProb * 100
+                    });
+                }
+            }
+            
+            displayResults(results, homeTeamName, awayTeamName);
+        }
+
+        function displayResults(results, homeTeam, awayTeam) {
+            const resultsSection = document.getElementById('results');
+            const resultsGrid = document.getElementById('resultsGrid');
+            
+            resultsSection.style.display = 'block';
+            resultsGrid.innerHTML = '';
+            
+            // Atualizar header com nomes dos times
+            const resultsHeader = resultsSection.querySelector('.results-header p');
+            resultsHeader.textContent = `${homeTeam} vs ${awayTeam}`;
+            
+            results.forEach(result => {
+                const resultBox = document.createElement('div');
+                resultBox.className = 'result-box';
+                
+                // Definir classe de cor baseada na probabilidade
+                if (result.probability >= 80) {
+                    resultBox.classList.add('high');
+                } else if (result.probability >= 59) {
+                    resultBox.classList.add('medium');
+                } else {
+                    resultBox.classList.add('low');
+                }
+                
+                resultBox.innerHTML = `
+                    <div class="result-score">${result.score}</div>
+                    <div class="result-probability">${result.probability.toFixed(1)}%</div>
+                `;
+                
+                resultsGrid.appendChild(resultBox);
+            });
+            
+            // Scroll suave para os resultados
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showError(message) {
+            // Remove mensagem de erro anterior se existir
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            const calculateSection = document.querySelector('.calculate-section');
+            calculateSection.parentNode.insertBefore(errorDiv, calculateSection);
+            
+            // Remove mensagem após 5 segundos
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // Adicionar algumas partidas de exemplo ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Adicionar uma partida de exemplo para cada time
+            addMatch('home');
+            addMatch('away');
+        });
+    </script>
+</body>
+</html>

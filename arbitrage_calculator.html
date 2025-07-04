@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Arbitragem - Apostas Esportivas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .bet-card {
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bet-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #2196F3, #FF9800);
+        }
+
+        .bet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .bet-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+            font-size: 0.95em;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: scale(1.02);
+        }
+
+        .calculate-btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .results-section {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .arbitrage-status {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .arbitrage-status.profitable {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .arbitrage-status.not-profitable {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .investment-input {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .investment-input input {
+            width: 200px;
+            padding: 12px;
+            font-size: 1.1em;
+            text-align: center;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .result-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .result-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .result-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: #7f8c8d;
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .bet-amount {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .error-message {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Hub de Arbitragem</h1>
+        <p class="subtitle">Calcule oportunidades de arbitragem em apostas esportivas</p>
+
+        <div class="input-section">
+            <div class="bet-card">
+                <div class="bet-title">Time Casa</div>
+                <div class="form-group">
+                    <label for="bookmaker1">Casa de Apostas:</label>
+                    <select id="bookmaker1">
+                        <option value="">Selecione a casa</option>
+                        <option value="Betano">Betano</option>
+                        <option value="EstrelaBet">EstrelaBet</option>
+                        <option value="SuperBet">SuperBet</option>
+                        <option value="Bet365">Bet365</option>
+                        <option value="Sportingbet">Sportingbet</option>
+                        <option value="Betfair">Betfair</option>
+                        <option value="1xBet">1xBet</option>
+                        <option value="Rivalo">Rivalo</option>
+                        <option value="Betway">Betway</option>
+                        <option value="Pinnacle">Pinnacle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="odd1">Odd para Vitória Casa:</label>
+                    <input type="number" id="odd1" step="0.01" min="1.01" placeholder="Ex: 2.50">
+                </div>
+            </div>
+
+            <div class="bet-card">
+                <div class="bet-title">Empate</div>
+                <div class="form-group">
+                    <label for="bookmaker2">Casa de Apostas:</label>
+                    <select id="bookmaker2">
+                        <option value="">Selecione a casa</option>
+                        <option value="Betano">Betano</option>
+                        <option value="EstrelaBet">EstrelaBet</option>
+                        <option value="SuperBet">SuperBet</option>
+                        <option value="Bet365">Bet365</option>
+                        <option value="Sportingbet">Sportingbet</option>
+                        <option value="Betfair">Betfair</option>
+                        <option value="1xBet">1xBet</option>
+                        <option value="Rivalo">Rivalo</option>
+                        <option value="Betway">Betway</option>
+                        <option value="Pinnacle">Pinnacle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="odd2">Odd para Empate:</label>
+                    <input type="number" id="odd2" step="0.01" min="1.01" placeholder="Ex: 3.20">
+                </div>
+            </div>
+
+            <div class="bet-card">
+                <div class="bet-title">Time Visitante</div>
+                <div class="form-group">
+                    <label for="bookmaker3">Casa de Apostas:</label>
+                    <select id="bookmaker3">
+                        <option value="">Selecione a casa</option>
+                        <option value="Betano">Betano</option>
+                        <option value="EstrelaBet">EstrelaBet</option>
+                        <option value="SuperBet">SuperBet</option>
+                        <option value="Bet365">Bet365</option>
+                        <option value="Sportingbet">Sportingbet</option>
+                        <option value="Betfair">Betfair</option>
+                        <option value="1xBet">1xBet</option>
+                        <option value="Rivalo">Rivalo</option>
+                        <option value="Betway">Betway</option>
+                        <option value="Pinnacle">Pinnacle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="odd3">Odd para Vitória Visitante:</label>
+                    <input type="number" id="odd3" step="0.01" min="1.01" placeholder="Ex: 4.00">
+                </div>
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="calculateArbitrage()">
+            🧮 Calcular Arbitragem
+        </button>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="arbitrage-status" id="arbitrageStatus"></div>
+            
+            <div class="investment-input">
+                <label for="totalInvestment">Valor Total a Investir (R$):</label>
+                <input type="number" id="totalInvestment" value="1000" min="1" step="0.01" onchange="updateBetAmounts()">
+            </div>
+
+            <div class="results-grid" id="resultsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentArbitrageData = null;
+
+        function calculateArbitrage() {
+            const bookmaker1 = document.getElementById('bookmaker1').value;
+            const bookmaker2 = document.getElementById('bookmaker2').value;
+            const bookmaker3 = document.getElementById('bookmaker3').value;
+            const odd1 = parseFloat(document.getElementById('odd1').value);
+            const odd2 = parseFloat(document.getElementById('odd2').value);
+            const odd3 = parseFloat(document.getElementById('odd3').value);
+
+            // Validações
+            if (!bookmaker1 || !bookmaker2 || !bookmaker3) {
+                showError('Por favor, selecione todas as casas de apostas.');
+                return;
+            }
+
+            if (!odd1 || !odd2 || !odd3 || odd1 <= 1 || odd2 <= 1 || odd3 <= 1) {
+                showError('Por favor, insira todas as odds válidas (maiores que 1.00).');
+                return;
+            }
+
+            hideError();
+
+            // Cálculo da arbitragem
+            const implied1 = 1 / odd1;
+            const implied2 = 1 / odd2;
+            const implied3 = 1 / odd3;
+            const totalImplied = implied1 + implied2 + implied3;
+
+            // Verifica se há oportunidade de arbitragem
+            const isArbitrage = totalImplied < 1;
+            const profit = isArbitrage ? ((1 - totalImplied) * 100) : 0;
+
+            // Calcula as porcentagens de aposta
+            const percentage1 = (implied1 / totalImplied) * 100;
+            const percentage2 = (implied2 / totalImplied) * 100;
+            const percentage3 = (implied3 / totalImplied) * 100;
+
+            currentArbitrageData = {
+                isArbitrage,
+                profit,
+                bookmakers: [bookmaker1, bookmaker2, bookmaker3],
+                odds: [odd1, odd2, odd3],
+                percentages: [percentage1, percentage2, percentage3],
+                outcomes: ['Vitória Casa', 'Empate', 'Vitória Visitante']
+            };
+
+            displayResults();
+        }
+
+        function displayResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            const arbitrageStatus = document.getElementById('arbitrageStatus');
+            
+            resultsSection.classList.add('show');
+
+            if (currentArbitrageData.isArbitrage) {
+                arbitrageStatus.className = 'arbitrage-status profitable';
+                arbitrageStatus.innerHTML = `
+                    🎉 OPORTUNIDADE DE ARBITRAGEM ENCONTRADA!<br>
+                    Lucro Garantido: ${currentArbitrageData.profit.toFixed(2)}%
+                `;
+            } else {
+                arbitrageStatus.className = 'arbitrage-status not-profitable';
+                arbitrageStatus.innerHTML = `
+                    ⚠️ NÃO HÁ OPORTUNIDADE DE ARBITRAGEM<br>
+                    As odds não permitem lucro garantido
+                `;
+            }
+
+            updateBetAmounts();
+        }
+
+        function updateBetAmounts() {
+            if (!currentArbitrageData) return;
+
+            const totalInvestment = parseFloat(document.getElementById('totalInvestment').value) || 1000;
+            const resultsGrid = document.getElementById('resultsGrid');
+
+            let resultsHTML = '';
+
+            for (let i = 0; i < 3; i++) {
+                const betAmount = (totalInvestment * currentArbitrageData.percentages[i]) / 100;
+                const potentialReturn = betAmount * currentArbitrageData.odds[i];
+                const potentialProfit = potentialReturn - totalInvestment;
+
+                resultsHTML += `
+                    <div class="result-card">
+                        <div class="result-title">${currentArbitrageData.outcomes[i]}</div>
+                        <div class="result-details">
+                            <div class="result-item">
+                                <span class="result-label">Casa de Apostas:</span>
+                                <span class="result-value">${currentArbitrageData.bookmakers[i]}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Odd:</span>
+                                <span class="result-value">${currentArbitrageData.odds[i].toFixed(2)}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Porcentagem:</span>
+                                <span class="result-value">${currentArbitrageData.percentages[i].toFixed(2)}%</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Apostar:</span>
+                                <span class="result-value bet-amount">R$ ${betAmount.toFixed(2)}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Retorno Potencial:</span>
+                                <span class="result-value">R$ ${potentialReturn.toFixed(2)}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Lucro se Ganhar:</span>
+                                <span class="result-value" style="color: ${potentialProfit > 0 ? '#4CAF50' : '#f44336'}">
+                                    R$ ${potentialProfit > 0 ? '+' : ''}${potentialProfit.toFixed(2)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsGrid.innerHTML = resultsHTML;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Adiciona listeners para atualizar os cálculos quando o investimento mudar
+        document.getElementById('totalInvestment').addEventListener('input', updateBetAmounts);
+    </script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Dutching - Placares Corretos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .input-group label {
+            min-width: 80px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+
+        .btn-remove {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .placares-list {
+            margin-top: 20px;
+        }
+
+        .placar-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .placar-item input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .stake-section {
+            background: #e8f5e8;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #c8e6c9;
+        }
+
+        .stake-input {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .stake-input label {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 100px;
+        }
+
+        .stake-input input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #c8e6c9;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .bet-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .bet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .bet-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .bet-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .bet-info span {
+            font-weight: 600;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .summary h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .summary-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .input-group label {
+                min-width: auto;
+                margin-bottom: 5px;
+            }
+
+            .placar-item {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .stake-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .stake-input label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Calculadora de Dutching</h1>
+            <p>Maximize seus lucros com placares corretos usando a técnica de Dutching</p>
+        </div>
+
+        <div class="input-section">
+            <h2>📊 Adicionar Placares</h2>
+            <div class="input-group">
+                <label>Placar:</label>
+                <input type="text" id="placar" placeholder="Ex: 1-0, 2-1, 0-0">
+                <label>Odd:</label>
+                <input type="number" id="odd" step="0.01" min="1" placeholder="Ex: 4.50">
+                <button class="btn btn-add" onclick="adicionarPlacar()">Adicionar</button>
+            </div>
+            
+            <div class="placares-list" id="placaresList"></div>
+        </div>
+
+        <div class="stake-section">
+            <h2>💰 Stake Total</h2>
+            <div class="stake-input">
+                <label>Valor Total:</label>
+                <input type="number" id="stakeTotal" step="0.01" min="0" placeholder="Digite o valor total para apostar">
+                <button class="btn" onclick="calcularDutching()">Calcular Dutching</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="summary" id="summary"></div>
+            <div class="results-grid" id="resultsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let placares = [];
+
+        function adicionarPlacar() {
+            const placarInput = document.getElementById('placar');
+            const oddInput = document.getElementById('odd');
+            
+            const placar = placarInput.value.trim();
+            const odd = parseFloat(oddInput.value);
+            
+            if (!placar || !odd || odd < 1) {
+                alert('Por favor, insira um placar válido e uma odd maior que 1.0');
+                return;
+            }
+            
+            // Verificar se o placar já existe
+            if (placares.some(p => p.placar === placar)) {
+                alert('Este placar já foi adicionado!');
+                return;
+            }
+            
+            placares.push({ placar, odd });
+            
+            placarInput.value = '';
+            oddInput.value = '';
+            
+            atualizarListaPlacares();
+        }
+
+        function removerPlacar(index) {
+            placares.splice(index, 1);
+            atualizarListaPlacares();
+        }
+
+        function atualizarListaPlacares() {
+            const lista = document.getElementById('placaresList');
+            
+            if (placares.length === 0) {
+                lista.innerHTML = '<p style="text-align: center; color: #7f8c8d; font-style: italic;">Nenhum placar adicionado ainda</p>';
+                return;
+            }
+            
+            lista.innerHTML = placares.map((placar, index) => `
+                <div class="placar-item">
+                    <div style="flex: 1;">
+                        <strong>Placar:</strong> ${placar.placar}
+                    </div>
+                    <div style="flex: 1;">
+                        <strong>Odd:</strong> ${placar.odd.toFixed(2)}
+                    </div>
+                    <button class="btn btn-remove" onclick="removerPlacar(${index})">Remover</button>
+                </div>
+            `).join('');
+        }
+
+        function calcularDutching() {
+            const stakeTotal = parseFloat(document.getElementById('stakeTotal').value);
+            
+            if (!stakeTotal || stakeTotal <= 0) {
+                mostrarErro('Por favor, insira um stake total válido');
+                return;
+            }
+            
+            if (placares.length < 2) {
+                mostrarErro('Adicione pelo menos 2 placares para calcular o Dutching');
+                return;
+            }
+            
+            // Verificar regra do Dutching: odd mínima deve ser igual ao número de placares
+            const oddMinima = placares.length;
+            const placaresInvalidos = placares.filter(p => p.odd < oddMinima);
+            
+            if (placaresInvalidos.length > 0) {
+                mostrarErro(`Regra do Dutching: Com ${placares.length} placares, todas as odds devem ser no mínimo ${oddMinima}.00. Placares com odds inválidas: ${placaresInvalidos.map(p => `${p.placar} (${p.odd})`).join(', ')}`);
+                return;
+            }
+            
+            // Calcular Dutching
+            const resultados = calcularDistribuicao(stakeTotal);
+            mostrarResultados(resultados, stakeTotal);
+        }
+
+        function calcularDistribuicao(stakeTotal) {
+            // Calcular a soma dos inversos das odds
+            const somaInversos = placares.reduce((soma, placar) => soma + (1 / placar.odd), 0);
+            
+            // Calcular o stake para cada placar
+            return placares.map(placar => {
+                const stakePlacar = (stakeTotal / placar.odd) / somaInversos;
+                const lucroSeAcertar = (stakePlacar * placar.odd) - stakeTotal;
+                
+                return {
+                    placar: placar.placar,
+                    odd: placar.odd,
+                    stake: stakePlacar,
+                    lucroSeAcertar: lucroSeAcertar,
+                    retornoTotal: stakePlacar * placar.odd
+                };
+            });
+        }
+
+        function mostrarResultados(resultados, stakeTotal) {
+            const resultsDiv = document.getElementById('results');
+            const summaryDiv = document.getElementById('summary');
+            const gridDiv = document.getElementById('resultsGrid');
+            
+            // Calcular lucro garantido (deve ser igual para todos os placares no Dutching perfeito)
+            const lucroGarantido = resultados[0].lucroSeAcertar;
+            const percentualLucro = (lucroGarantido / stakeTotal) * 100;
+            
+            // Resumo
+            summaryDiv.innerHTML = `
+                <h3>📈 Resumo do Dutching</h3>
+                <div class="summary-info">
+                    <div class="summary-item">
+                        <h4>Stake Total</h4>
+                        <p>R$ ${stakeTotal.toFixed(2)}</p>
+                    </div>
+                    <div class="summary-item">
+                        <h4>Lucro Garantido</h4>
+                        <p>R$ ${lucroGarantido.toFixed(2)}</p>
+                    </div>
+                    <div class="summary-item">
+                        <h4>ROI</h4>
+                        <p>${percentualLucro.toFixed(2)}%</p>
+                    </div>
+                    <div class="summary-item">
+                        <h4>Placares Cobertos</h4>
+                        <p>${placares.length} placares</p>
+                    </div>
+                </div>
+            `;
+            
+            // Cards individuais
+            gridDiv.innerHTML = resultados.map(resultado => `
+                <div class="bet-card">
+                    <h3>🎯 ${resultado.placar}</h3>
+                    <div class="bet-info">
+                        <span>Odd:</span>
+                        <span>${resultado.odd.toFixed(2)}</span>
+                    </div>
+                    <div class="bet-info">
+                        <span>Apostar:</span>
+                        <span>R$ ${resultado.stake.toFixed(2)}</span>
+                    </div>
+                    <div class="bet-info">
+                        <span>Retorno:</span>
+                        <span>R$ ${resultado.retornoTotal.toFixed(2)}</span>
+                    </div>
+                    <div class="bet-info">
+                        <span>Lucro:</span>
+                        <span>R$ ${resultado.lucroSeAcertar.toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            resultsDiv.style.display = 'block';
+            esconderErro();
+        }
+
+        function mostrarErro(mensagem) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="error">❌ ${mensagem}</div>`;
+            resultsDiv.style.display = 'block';
+        }
+
+        function esconderErro() {
+            // Erro será escondido quando os resultados forem mostrados
+        }
+
+        // Permitir adicionar placar com Enter
+        document.getElementById('placar').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('odd').focus();
+            }
+        });
+
+        document.getElementById('odd').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adicionarPlacar();
+            }
+        });
+
+        document.getElementById('stakeTotal').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calcularDutching();
+            }
+        });
+
+        // Inicializar lista vazia
+        atualizarListaPlacares();
+    </script>
+</body>
+</html>

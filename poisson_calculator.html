@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Probabilidades - Distribuição de Poisson</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1em;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .input-group.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .results.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results h3 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .result-values {
+            text-align: right;
+        }
+
+        .probability {
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        .odd {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .error {
+            color: #e53e3e;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .result-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .result-values {
+                text-align: left;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #718096;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚽ Calculadora de Probabilidades</h1>
+        
+        <div class="form-group">
+            <label for="modalidade">Selecione a modalidade:</label>
+            <select id="modalidade">
+                <option value="">Escolha uma modalidade</option>
+                <option value="chutes">Chutes ao Gol</option>
+                <option value="cartoes">Cartões (por time)</option>
+                <option value="escanteios">Escanteios</option>
+            </select>
+        </div>
+
+        <div id="chutes-inputs" class="input-group">
+            <div class="form-group">
+                <label for="media-chutes">Média de chutes ao gol por jogo:</label>
+                <input type="number" id="media-chutes" step="0.1" min="0" placeholder="Ex: 5.2">
+                <div class="error" id="error-chutes">Por favor, insira uma média válida</div>
+            </div>
+        </div>
+
+        <div id="cartoes-inputs" class="input-group">
+            <div class="form-group">
+                <label for="media-cartoes">Média de cartões por jogo (do time):</label>
+                <input type="number" id="media-cartoes" step="0.1" min="0" placeholder="Ex: 2.1">
+                <div class="error" id="error-cartoes">Por favor, insira uma média válida</div>
+            </div>
+        </div>
+
+        <div id="escanteios-inputs" class="input-group">
+            <div class="form-group">
+                <label for="media-escanteios">Média de escanteios por jogo:</label>
+                <input type="number" id="media-escanteios" step="0.1" min="0" placeholder="Ex: 9.5">
+                <div class="error" id="error-escanteios-media">Por favor, insira uma média válida</div>
+            </div>
+            <div class="form-group">
+                <label for="minimo-escanteios">Número mínimo de escanteios:</label>
+                <input type="number" id="minimo-escanteios" step="1" min="0" placeholder="Ex: 8">
+                <div class="error" id="error-escanteios-min">Por favor, insira um número válido</div>
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="calcularProbabilidades()">
+            Calcular Probabilidades
+        </button>
+
+        <div id="results" class="results">
+            <h3>Resultados</h3>
+            <div id="results-content"></div>
+        </div>
+
+        <div class="footer">
+            <p>Baseado na Distribuição de Poisson | Odds = 1 / Probabilidade</p>
+        </div>
+    </div>
+
+    <script>
+        // Função para calcular o fatorial
+        function factorial(n) {
+            if (n <= 1) return 1;
+            return n * factorial(n - 1);
+        }
+
+        // Função para calcular a probabilidade de Poisson
+        function poissonProbability(lambda, k) {
+            return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+        }
+
+        // Função para calcular P(X >= k) = 1 - P(X < k)
+        function poissonGreaterOrEqual(lambda, k) {
+            let cumulative = 0;
+            for (let i = 0; i < k; i++) {
+                cumulative += poissonProbability(lambda, i);
+            }
+            return 1 - cumulative;
+        }
+
+        // Função para calcular P(X > k) = 1 - P(X <= k)
+        function poissonGreater(lambda, k) {
+            let cumulative = 0;
+            for (let i = 0; i <= k; i++) {
+                cumulative += poissonProbability(lambda, i);
+            }
+            return 1 - cumulative;
+        }
+
+        // Função para mostrar/ocultar campos baseado na modalidade
+        document.getElementById('modalidade').addEventListener('change', function() {
+            const modalidade = this.value;
+            const inputGroups = document.querySelectorAll('.input-group');
+            const results = document.getElementById('results');
+            
+            // Ocultar todos os grupos de input
+            inputGroups.forEach(group => {
+                group.classList.remove('active');
+            });
+            
+            // Ocultar resultados
+            results.classList.remove('active');
+            
+            // Mostrar o grupo correspondente
+            if (modalidade) {
+                const targetGroup = document.getElementById(modalidade + '-inputs');
+                if (targetGroup) {
+                    targetGroup.classList.add('active');
+                }
+            }
+        });
+
+        // Função para limpar erros
+        function clearErrors() {
+            const errors = document.querySelectorAll('.error');
+            errors.forEach(error => error.classList.remove('active'));
+        }
+
+        // Função para mostrar erro
+        function showError(errorId) {
+            const error = document.getElementById(errorId);
+            if (error) {
+                error.classList.add('active');
+            }
+        }
+
+        // Função para validar entrada
+        function validateInput(value) {
+            return value !== '' && !isNaN(value) && parseFloat(value) >= 0;
+        }
+
+        // Função para formatar probabilidade e odd
+        function formatResult(probability) {
+            const percentage = (probability * 100).toFixed(2);
+            const odd = (1 / probability).toFixed(2);
+            return { percentage, odd };
+        }
+
+        // Função principal para calcular probabilidades
+        function calcularProbabilidades() {
+            clearErrors();
+            
+            const modalidade = document.getElementById('modalidade').value;
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('results-content');
+            
+            if (!modalidade) {
+                alert('Por favor, selecione uma modalidade primeiro.');
+                return;
+            }
+            
+            let results = [];
+            
+            if (modalidade === 'chutes') {
+                const media = document.getElementById('media-chutes').value;
+                
+                if (!validateInput(media)) {
+                    showError('error-chutes');
+                    return;
+                }
+                
+                const lambda = parseFloat(media);
+                
+                // Calcular probabilidades para pelo menos 0.5, 1.5, 2.5 chutes
+                const prob05 = poissonGreaterOrEqual(lambda, 1); // >= 0.5 é o mesmo que >= 1
+                const prob15 = poissonGreaterOrEqual(lambda, 2); // >= 1.5 é o mesmo que >= 2
+                const prob25 = poissonGreaterOrEqual(lambda, 3); // >= 2.5 é o mesmo que >= 3
+                
+                results = [
+                    { label: 'Pelo menos 0.5 chutes', ...formatResult(prob05) },
+                    { label: 'Pelo menos 1.5 chutes', ...formatResult(prob15) },
+                    { label: 'Pelo menos 2.5 chutes', ...formatResult(prob25) }
+                ];
+                
+            } else if (modalidade === 'cartoes') {
+                const media = document.getElementById('media-cartoes').value;
+                
+                if (!validateInput(media)) {
+                    showError('error-cartoes');
+                    return;
+                }
+                
+                const lambda = parseFloat(media);
+                
+                // Calcular probabilidades para mais de 1.5, 2.5, 3.5 cartões
+                const prob15 = poissonGreater(lambda, 1); // > 1.5 é o mesmo que > 1
+                const prob25 = poissonGreater(lambda, 2); // > 2.5 é o mesmo que > 2
+                const prob35 = poissonGreater(lambda, 3); // > 3.5 é o mesmo que > 3
+                
+                results = [
+                    { label: 'Mais de 1.5 cartões', ...formatResult(prob15) },
+                    { label: 'Mais de 2.5 cartões', ...formatResult(prob25) },
+                    { label: 'Mais de 3.5 cartões', ...formatResult(prob35) }
+                ];
+                
+            } else if (modalidade === 'escanteios') {
+                const media = document.getElementById('media-escanteios').value;
+                const minimo = document.getElementById('minimo-escanteios').value;
+                
+                if (!validateInput(media)) {
+                    showError('error-escanteios-media');
+                    return;
+                }
+                
+                if (!validateInput(minimo)) {
+                    showError('error-escanteios-min');
+                    return;
+                }
+                
+                const lambda = parseFloat(media);
+                const min = parseInt(minimo);
+                
+                // Calcular probabilidades para pelo menos X escanteios e incrementos
+                for (let i = min; i <= min + 3; i++) {
+                    const prob = poissonGreaterOrEqual(lambda, i);
+                    results.push({
+                        label: `Pelo menos ${i} escanteios`,
+                        ...formatResult(prob)
+                    });
+                }
+            }
+            
+            // Mostrar resultados
+            resultsContent.innerHTML = results.map(result => `
+                <div class="result-item">
+                    <div class="result-label">${result.label}</div>
+                    <div class="result-values">
+                        <div class="probability">${result.percentage}%</div>
+                        <div class="odd">Odd: ${result.odd}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            resultsDiv.classList.add('active');
+        }
+
+        // Permitir cálculo com Enter
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calcularProbabilidades();
+            }
+        });
+    </script>
+</body>
+</html>
