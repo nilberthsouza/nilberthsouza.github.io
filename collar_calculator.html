@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collar (Proteção) - Calculadora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #27ae60 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .strategy-info {
+            background: #e8f5e8;
+            border: 2px solid #27ae60;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .strategy-info h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .strategy-info p {
+            color: #34495e;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .strategy-info .example {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .input-group:hover {
+            border-color: #27ae60;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 18px 50px;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 30px auto;
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(39, 174, 96, 0.4);
+        }
+
+        .results {
+            margin-top: 40px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 18px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 14px;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+
+        .results-table td {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .profit {
+            color: #27ae60;
+            font-weight: 700;
+        }
+
+        .loss {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .break-even {
+            color: #f39c12;
+            font-weight: 700;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            color: #856404;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .stakes-info {
+            background: #e8f5e8;
+            border: 2px solid #27ae60;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .stakes-info h4 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .stakes-info p {
+            color: #2d5016;
+            margin-bottom: 5px;
+        }
+
+        .scenario-highlight {
+            background: #e8f5e8;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Collar (Proteção)</h1>
+            <p>Estratégia de proteção combinando back no favorito com under 2.5 gols para maximizar lucros em placares magros e minimizar perdas em empates</p>
+        </div>
+
+        <div class="content">
+            <div class="strategy-info">
+                <h3>🎯 Como funciona o Collar</h3>
+                <p>O Collar é uma estratégia defensiva que combina uma aposta principal (back no favorito) com uma proteção (under 2.5 gols). O objetivo é maximizar lucros quando o favorito vence por placar magro (1x0, 2x0, 2x1) e minimizar perdas em empates ou quando há poucos gols.</p>
+                <p><strong>Vantagens:</strong> Proteção contra empates, lucro em vitórias por placar magro</p>
+                <p><strong>Risco:</strong> Perdas maiores se o favorito perder ou houver muitos gols</p>
+                <div class="example">
+                    <strong>Exemplo:</strong> Back no favorito @1.80 + Under 2.5 @2.20<br>
+                    • Favorito vence 1x0 = Ambas ganham = Lucro máximo<br>
+                    • Empate 0x0 = Perde favorito, ganha under = Perda minimizada<br>
+                    • Favorito perde 3x1 = Ambas perdem = Perda máxima
+                </div>
+            </div>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <label>👑 Odd do Favorito</label>
+                    <input type="number" id="favorite-odd" step="0.01" placeholder="Ex: 1.80">
+                </div>
+                <div class="input-group">
+                    <label>⬇️ Odd Under 2.5</label>
+                    <input type="number" id="under25-odd" step="0.01" placeholder="Ex: 2.20">
+                </div>
+                <div class="input-group">
+                    <label>💰 Stake Total (R$)</label>
+                    <input type="number" id="total-stake" step="0.01" placeholder="Ex: 100">
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateCollar()">🛡️ Calcular Collar</button>
+            
+            <div class="stakes-info" id="stakes-info">
+                <h4>📊 Divisão das Stakes:</h4>
+                <p id="favorite-stake"></p>
+                <p id="under-stake"></p>
+            </div>
+            
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        function getResultClass(value) {
+            if (value > 0) return 'profit';
+            if (value < 0) return 'loss';
+            return 'break-even';
+        }
+
+        function calculateCollar() {
+            const favoriteOdd = parseFloat(document.getElementById('favorite-odd').value);
+            const under25Odd = parseFloat(document.getElementById('under25-odd').value);
+            const totalStake = parseFloat(document.getElementById('total-stake').value);
+
+            if (!favoriteOdd || !under25Odd || !totalStake) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+
+            if (favoriteOdd < 1 || under25Odd < 1) {
+                alert('As odds devem ser maiores que 1.00!');
+                return;
+            }
+
+            // Calcular stake para cada aposta (50/50 ou proporcional)
+            const stakeFavorite = totalStake * 0.6; // 60% no favorito
+            const stakeUnder25 = totalStake * 0.4;  // 40% no under
+
+            // Mostrar divisão das stakes
+            document.getElementById('favorite-stake').textContent = `Favorito: ${formatCurrency(stakeFavorite)}`;
+            document.getElementById('under-stake').textContent = `Under 2.5: ${formatCurrency(stakeUnder25)}`;
+            document.getElementById('stakes-info').style.display = 'block';
+
+            const results = [
+                {
+                    scenario: 'Favorito vence 1x0',
+                    description: 'Melhor cenário',
+                    favorite: stakeFavorite * favoriteOdd - stakeFavorite,
+                    under: stakeUnder25 * under25Odd - stakeUnder25,
+                    total: (stakeFavorite * favoriteOdd - stakeFavorite) + (stakeUnder25 * under25Odd - stakeUnder25),
+                    highlight: true
+                },
+                {
+                    scenario: 'Favorito vence 2x0',
+                    description: 'Excelente cenário',
+                    favorite: stakeFavorite * favoriteOdd - stakeFavorite,
+                    under: stakeUnder25 * under25Odd - stakeUnder25,
+                    total: (stakeFavorite * favoriteOdd - stakeFavorite) + (stakeUnder25 * under25Odd - stakeUnder25),
+                    highlight: true
+                },
+                {
+                    scenario: 'Favorito vence 2x1',
+                    description: 'Bom cenário',
+                    favorite: stakeFavorite * favoriteOdd - stakeFavorite,
+                    under: stakeUnder25 * under25Odd - stakeUnder25,
+                    total: (stakeFavorite * favoriteOdd - stakeFavorite) + (stakeUnder25 * under25Odd - stakeUnder25),
+                    highlight: true
+                },
+                {
+                    scenario: 'Empate 0x0',
+                    description: 'Proteção ativa',
+                    favorite: -stakeFavorite,
+                    under: stakeUnder25 * under25Odd - stakeUnder25,
+                    total: -stakeFavorite + (stakeUnder25 * under25Odd - stakeUnder25),
+                    highlight: false
+                },
+                {
+                    scenario: 'Empate 1x1',
+                    description: 'Proteção ativa',
+                    favorite: -stakeFavorite,
+                    under: stakeUnder25 * under25Odd - stakeUnder25,
+                    total: -stakeFavorite + (stakeUnder25 * under25Odd - stakeUnder25),
+                    highlight: false
+                },
+                {
+                    scenario: 'Empate 2x2',
+                    description: 'Ambas perdem',
+                    favorite: -stakeFavorite,
+                    under: -stakeUnder25,
+                    total: -stakeFavorite - stakeUnder25,
+                    highlight: false
+                },
+                {
+                    scenario: 'Favorito vence 3x0',
+                    description: 'Vitória sem proteção',
+                    favorite: stakeFavorite * favoriteOdd - stakeFavorite,
+                    under: -stakeUnder25,
+                    total: (stakeFavorite * favoriteOdd - stakeFavorite) - stakeUnder25,
+                    highlight: false
+                },
+                {
+                    scenario: 'Favorito vence 3x1',
+                    description: 'Vitória sem proteção',
+                    favorite: stakeFavorite * favoriteOdd - stakeFavorite,
+                    under: -stakeUnder25,
+                    total: (stakeFavorite * favoriteOdd - stakeFavorite) - stakeUnder25,
+                    highlight: false
+                },
+                {
+                    scenario: 'Favorito perde 0x1',
+                    description: 'Proteção ativa',
+                    favorite: -stakeFavorite,
+                    under: stakeUnder25 * under25Odd - stakeUnder25,
+                    total: -stakeFavorite + (stakeUnder25 * under25Odd - stakeUnder25),
+                    highlight: false
+                },
+                {
+                    scenario: 'Favorito perde 1x2',
+                    description: 'Proteção ativa',
+                    favorite: -stakeFavorite,
+                    under: stakeUnder25 * under25Odd - stakeUnder25,
+                    total: -stakeFavorite + (stakeUnder25 * under25Odd - stakeUnder25),
+                    highlight: false
+                },
+                {
+                    scenario: 'Favorito perde 0x3',
+                    description: 'Pior cenário',
+                    favorite: -stakeFavorite,
+                    under: -stakeUnder25,
+                    total: -stakeFavorite - stakeUnder25,
+                    highlight: false
+                }
+            ];
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('results');
+            
+            let html = '<table class="results-table"><thead><tr>';
+            html += '<th>Cenário</th><th>Favorito</th><th>Under 2.5</th><th>Resultado Total</th>';
+            html += '</tr></thead><tbody>';
+
+            results.forEach(result => {
+                const rowClass = result.highlight ? 'scenario-highlight' : '';
+                html += `<tr class="${rowClass}">`;
+                html += `<td><strong>${result.scenario}</strong><br><small>${result.description}</small></td>`;
+                html += `<td class="${getResultClass(result.favorite)}">${formatCurrency(result.favorite)}</td>`;
+                html += `<td class="${getResultClass(result.under)}">${formatCurrency(result.under)}</td>`;
+                html += `<td class="${getResultClass(result.total)}">${formatCurrency(result.total)}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            
+            html += '<div class="warning">⚠️ <strong>Importante:</strong> O Collar é uma estratégia de proteção ideal para quem acredita que o favorito vai vencer, mas quer se proteger contra empates. Os cenários destacados em verde são onde a estratégia funciona melhor. Aposte com responsabilidade!</div>';
+            
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
