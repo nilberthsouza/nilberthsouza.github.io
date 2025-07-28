@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treinador de Stack de Poker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f4c3a, #1a7a5c);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            border: 2px solid #ffd700;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .poker-table {
+            background: #0d3d2a;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 3px solid #ffd700;
+        }
+
+        .big-blind-info {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .total-value {
+            font-size: 2rem;
+            margin: 20px 0;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .input-section {
+            margin: 30px 0;
+        }
+
+        .input-section label {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .input-section input {
+            padding: 12px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            width: 200px;
+            text-align: center;
+            margin: 0 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .verify-btn {
+            background: linear-gradient(145deg, #ffd700, #ffcc00);
+            color: #333;
+        }
+
+        .verify-btn:hover {
+            background: linear-gradient(145deg, #ffcc00, #ffb700);
+            transform: translateY(-2px);
+        }
+
+        .new-stack-btn {
+            background: linear-gradient(145deg, #44ff88, #33cc66);
+            color: #333;
+        }
+
+        .new-stack-btn:hover {
+            background: linear-gradient(145deg, #33cc66, #22aa55);
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .result.correct {
+            background: rgba(68, 255, 136, 0.2);
+            border: 2px solid #44ff88;
+            color: #44ff88;
+        }
+
+        .result.incorrect {
+            background: rgba(255, 68, 68, 0.2);
+            border: 2px solid #ff4444;
+            color: #ff4444;
+        }
+
+        .score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+        }
+
+        .score h3 {
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .chips-container {
+                gap: 10px;
+            }
+            
+            .chip {
+                width: 50px;
+                height: 12px;
+                font-size: 0.7rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .score {
+                position: static;
+                margin: 20px auto;
+                width: fit-content;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="score">
+        <h3>Pontuação</h3>
+        <div>Acertos: <span id="correct">0</span></div>
+        <div>Erros: <span id="incorrect">0</span></div>
+    </div>
+
+    <div class="container">
+        <h1>🃏 Treinador de Stack</h1>
+        
+        <div class="poker-table">
+            <div class="big-blind-info">
+                Big Blind: $<span id="bigBlind">50</span>
+            </div>
+            
+            <div class="total-value">
+                Stack Total: $<span id="totalValue">0</span>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <label for="answer">Quantos Big Blinds esta stack representa?</label>
+            <input type="number" id="answer" step="0.5" min="0" placeholder="Ex: 15 ou 12.5">
+        </div>
+
+        <div class="buttons">
+            <button class="verify-btn" onclick="verifyAnswer()">Verificar</button>
+            <button class="new-stack-btn" onclick="generateNewStack()">Nova Stack</button>
+        </div>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const chipValues = [1, 5, 25, 100, 500, 1000, 5000];
+
+        let currentStack = [];
+        let currentBigBlind = 50;
+        let correctAnswerBB = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        function generateRandomBigBlind() {
+            const blinds = [10, 25, 50, 100, 200, 500, 1000, 2000, 5000];
+            return blinds[Math.floor(Math.random() * blinds.length)];
+        }
+
+        function generateRandomStack() {
+            currentStack = [];
+            const stackTypes = [
+                // Stack pequeno (5-15 BB)
+                () => generateStackByBB(5, 15),
+                // Stack médio (15-40 BB)
+                () => generateStackByBB(15, 40),
+                // Stack grande (40-100 BB)
+                () => generateStackByBB(40, 100),
+                // Stack muito grande (100-200 BB)
+                () => generateStackByBB(100, 200)
+            ];
+
+            const randomType = stackTypes[Math.floor(Math.random() * stackTypes.length)];
+            return randomType();
+        }
+
+        function generateStackByBB(minBB, maxBB) {
+            // Gera um valor aleatório de BB que será inteiro ou .5
+            const randomBB = Math.random() * (maxBB - minBB) + minBB;
+            let targetBB;
+            
+            // Força o valor a ser inteiro ou .5
+            if (Math.random() < 0.7) {
+                // 70% chance de ser inteiro
+                targetBB = Math.round(randomBB);
+            } else {
+                // 30% chance de ser .5
+                targetBB = Math.floor(randomBB) + 0.5;
+            }
+            
+            // Calcula o valor total da stack
+            const targetValue = targetBB * currentBigBlind;
+            
+            let remainingValue = targetValue;
+            const stack = {};
+
+            // Distribui o valor usando diferentes denominações
+            chipValues.sort((a, b) => b - a).forEach(chipValue => {
+                if (remainingValue >= chipValue) {
+                    const maxChips = Math.min(20, Math.floor(remainingValue / chipValue));
+                    if (maxChips > 0) {
+                        const numChips = Math.floor(Math.random() * maxChips) + 1;
+                        stack[chipValue] = numChips;
+                        remainingValue -= chipValue * numChips;
+                    }
+                }
+            });
+
+            // Adiciona o valor restante com fichas menores
+            if (remainingValue > 0) {
+                chipValues.forEach(chipValue => {
+                    if (remainingValue >= chipValue) {
+                        const numChips = Math.floor(remainingValue / chipValue);
+                        if (numChips > 0) {
+                            stack[chipValue] = (stack[chipValue] || 0) + numChips;
+                            remainingValue -= chipValue * numChips;
+                        }
+                    }
+                });
+            }
+
+            return stack;
+        }
+
+        function renderStack(stack) {
+            let totalValue = 0;
+
+            Object.entries(stack).forEach(([value, count]) => {
+                const chipValue = parseInt(value);
+                totalValue += chipValue * count;
+            });
+
+            document.getElementById('totalValue').textContent = totalValue;
+            correctAnswerBB = totalValue / currentBigBlind;
+            
+            return totalValue;
+        }
+
+        function generateNewStack() {
+            currentBigBlind = generateRandomBigBlind();
+            document.getElementById('bigBlind').textContent = currentBigBlind;
+            
+            const stack = generateRandomStack();
+            renderStack(stack);
+            
+            document.getElementById('answer').value = '';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('answer').focus();
+        }
+
+        function verifyAnswer() {
+            const userAnswer = parseFloat(document.getElementById('answer').value);
+            const resultDiv = document.getElementById('result');
+            
+            if (isNaN(userAnswer)) {
+                resultDiv.innerHTML = 'Por favor, insira um número válido!';
+                resultDiv.className = 'result incorrect';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            const isCorrect = userAnswer === correctAnswerBB;
+
+            if (isCorrect) {
+                correctCount++;
+                const displayBB = correctAnswerBB % 1 === 0 ? correctAnswerBB.toString() : correctAnswerBB.toFixed(1);
+                resultDiv.innerHTML = `🎉 Correto! A stack representa ${displayBB} BB`;
+                resultDiv.className = 'result correct';
+            } else {
+                incorrectCount++;
+                const displayBB = correctAnswerBB % 1 === 0 ? correctAnswerBB.toString() : correctAnswerBB.toFixed(1);
+                const displayUser = userAnswer % 1 === 0 ? userAnswer.toString() : userAnswer.toFixed(1);
+                resultDiv.innerHTML = `❌ Incorreto! A resposta correta é ${displayBB} BB<br>Você respondeu: ${displayUser} BB`;
+                resultDiv.className = 'result incorrect';
+            }
+
+            document.getElementById('correct').textContent = correctCount;
+            document.getElementById('incorrect').textContent = incorrectCount;
+            
+            resultDiv.style.display = 'block';
+        }
+
+        // Event listeners
+        document.getElementById('answer').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyAnswer();
+            }
+        });
+
+        // Validar entrada para permitir apenas números inteiros e .5
+        document.getElementById('answer').addEventListener('input', function(e) {
+            let value = e.target.value;
+            
+            // Remove caracteres inválidos
+            value = value.replace(/[^0-9.]/g, '');
+            
+            // Permite apenas um ponto decimal
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts[1];
+            }
+            
+            // Se há parte decimal, limita a apenas um dígito e só permite 5
+            if (parts.length === 2) {
+                if (parts[1].length > 1) {
+                    parts[1] = parts[1][0];
+                }
+                if (parts[1] !== '' && parts[1] !== '5') {
+                    parts[1] = '5';
+                }
+                value = parts[0] + '.' + parts[1];
+            }
+            
+            e.target.value = value;
+        });
+
+        // Inicializar o jogo
+        generateNewStack();
+    </script>
+</body>
+</html>

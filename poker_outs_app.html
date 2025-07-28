@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Outs Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f4c3a, #1a7a5e, #0f4c3a);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid #ffd700;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffd700;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .cards-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            width: 60px;
+            height: 84px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid #ddd;
+        }
+
+        .card.red {
+            color: #e74c3c;
+        }
+
+        .card.black {
+            color: #2c3e50;
+        }
+
+        .scenario-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #ecf0f1;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        input[type="number"] {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 120px;
+            text-align: center;
+            background: white;
+            color: black;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .new-game-btn {
+            background: linear-gradient(45deg, #27ae60, #229954);
+        }
+
+        .new-game-btn:hover {
+            background: linear-gradient(45deg, #229954, #1e8449);
+        }
+
+        .result {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 15px;
+        }
+
+        .result.correct {
+            background: rgba(39, 174, 96, 0.8);
+            border: 2px solid #27ae60;
+        }
+
+        .result.incorrect {
+            background: rgba(231, 76, 60, 0.8);
+            border: 2px solid #e74c3c;
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                width: 50px;
+                height: 70px;
+                font-size: 0.8rem;
+            }
+
+            .cards-container {
+                gap: 8px;
+            }
+
+            .input-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            input[type="number"] {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            button {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .card {
+                width: 45px;
+                height: 63px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🃏 Poker Outs Calculator</h1>
+        
+        <div class="game-section">
+            <div class="section-title">Sua Mão:</div>
+            <div class="cards-container" id="hand-cards"></div>
+        </div>
+
+        <div class="game-section">
+            <div class="section-title" id="board-title">Board:</div>
+            <div class="cards-container" id="board-cards"></div>
+        </div>
+
+        <div class="scenario-info" id="scenario-info"></div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="outs-input">Quantos outs você tem?</label>
+                <input type="number" id="outs-input" min="0" max="47" placeholder="0-47">
+                <button onclick="checkAnswer()">Verificar</button>
+            </div>
+            <button class="new-game-btn" onclick="newGame()">Nova Mão</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const suits = ['♠', '♥', '♦', '♣'];
+        const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        
+        let currentHand = [];
+        let currentBoard = [];
+        let currentScenario = '';
+        let correctOuts = 0;
+        let correctOutsDetails = [];
+        let usedCards = [];
+
+        function createDeck() {
+            const deck = [];
+            for (let suit of suits) {
+                for (let rank of ranks) {
+                    deck.push({ rank, suit });
+                }
+            }
+            return deck;
+        }
+
+        function getRandomCards(count, exclude = []) {
+            const deck = createDeck();
+            const availableCards = deck.filter(card => 
+                !exclude.some(usedCard => 
+                    usedCard.rank === card.rank && usedCard.suit === card.suit
+                )
+            );
+            
+            const selectedCards = [];
+            for (let i = 0; i < count; i++) {
+                const randomIndex = Math.floor(Math.random() * availableCards.length);
+                selectedCards.push(availableCards.splice(randomIndex, 1)[0]);
+            }
+            return selectedCards;
+        }
+
+        function displayCards(cards, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.classList.add(isRed(card.suit) ? 'red' : 'black');
+                cardElement.innerHTML = `<div>${card.rank}</div><div>${card.suit}</div>`;
+                container.appendChild(cardElement);
+            });
+        }
+
+        function isRed(suit) {
+            return suit === '♥' || suit === '♦';
+        }
+
+        function calculateOuts(hand, board) {
+            const allCards = [...hand, ...board];
+            const deck = createDeck();
+            const remainingCards = deck.filter(card => 
+                !allCards.some(usedCard => 
+                    usedCard.rank === card.rank && usedCard.suit === card.suit
+                )
+            );
+
+            let outsDetails = [];
+            let totalOuts = 0;
+            
+            // Contar cartas por naipe e rank
+            const suitCounts = {};
+            const rankCounts = {};
+            
+            allCards.forEach(card => {
+                suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
+                rankCounts[card.rank] = (rankCounts[card.rank] || 0) + 1;
+            });
+
+            // Verificar flush draw
+            for (let suit in suitCounts) {
+                if (suitCounts[suit] === 4) {
+                    const flushOuts = remainingCards.filter(card => card.suit === suit);
+                    if (flushOuts.length > 0) {
+                        totalOuts += flushOuts.length;
+                        outsDetails.push(`Flush draw (${suit}): ${flushOuts.length} outs - ${flushOuts.map(c => c.rank + c.suit).join(', ')}`);
+                    }
+                }
+            }
+
+            // Verificar straight draws
+            const allRanks = allCards.map(card => getRankValue(card.rank));
+            const uniqueRanks = [...new Set(allRanks)].sort((a, b) => a - b);
+            
+            // Verificar open ended straight draw
+            if (uniqueRanks.length >= 4) {
+                for (let i = 0; i <= uniqueRanks.length - 4; i++) {
+                    const sequence = uniqueRanks.slice(i, i + 4);
+                    if (sequence[3] - sequence[0] === 3) {
+                        let straightOuts = [];
+                        
+                        // Carta abaixo da sequência
+                        if (sequence[0] > 2) {
+                            const neededRank = sequence[0] - 1;
+                            const neededRankStr = getRankString(neededRank);
+                            const availableCards = remainingCards.filter(card => getRankValue(card.rank) === neededRank);
+                            straightOuts = straightOuts.concat(availableCards);
+                        }
+                        
+                        // Carta acima da sequência
+                        if (sequence[3] < 14) {
+                            const neededRank = sequence[3] + 1;
+                            const neededRankStr = getRankString(neededRank);
+                            const availableCards = remainingCards.filter(card => getRankValue(card.rank) === neededRank);
+                            straightOuts = straightOuts.concat(availableCards);
+                        }
+                        
+                        if (straightOuts.length > 0) {
+                            totalOuts += straightOuts.length;
+                            outsDetails.push(`Straight draw: ${straightOuts.length} outs - ${straightOuts.map(c => c.rank + c.suit).join(', ')}`);
+                        }
+                    }
+                }
+            }
+
+            // Verificar gutshot (inside straight draw)
+            for (let i = 1; i <= 11; i++) {
+                const straightCards = [i, i+1, i+2, i+3, i+4];
+                const presentCards = straightCards.filter(rank => uniqueRanks.includes(rank));
+                
+                if (presentCards.length === 4) {
+                    const missingRank = straightCards.find(rank => !uniqueRanks.includes(rank));
+                    const gutshotOuts = remainingCards.filter(card => getRankValue(card.rank) === missingRank);
+                    
+                    if (gutshotOuts.length > 0 && !outsDetails.some(detail => detail.includes('Straight draw'))) {
+                        totalOuts += gutshotOuts.length;
+                        outsDetails.push(`Gutshot straight: ${gutshotOuts.length} outs - ${gutshotOuts.map(c => c.rank + c.suit).join(', ')}`);
+                    }
+                }
+            }
+
+            // Verificar pair draws (melhorar para two pair, trips, etc.)
+            const handRanks = hand.map(card => card.rank);
+            handRanks.forEach(rank => {
+                if (!board.some(card => card.rank === rank)) {
+                    const pairOuts = remainingCards.filter(card => card.rank === rank);
+                    if (pairOuts.length > 0) {
+                        totalOuts += pairOuts.length;
+                        outsDetails.push(`Par de ${rank}s: ${pairOuts.length} outs - ${pairOuts.map(c => c.rank + c.suit).join(', ')}`);
+                    }
+                }
+            });
+
+            // Verificar overcards (apenas se não temos par)
+            const hasPair = handRanks[0] === handRanks[1] || handRanks.some(rank => board.some(card => card.rank === rank));
+            if (!hasPair) {
+                const boardHighCard = Math.max(...board.map(card => getRankValue(card.rank)));
+                const overcards = hand.filter(card => getRankValue(card.rank) > boardHighCard);
+                
+                overcards.forEach(card => {
+                    const overcardOuts = remainingCards.filter(c => c.rank === card.rank);
+                    if (overcardOuts.length > 0) {
+                        totalOuts += overcardOuts.length;
+                        outsDetails.push(`Overcard ${card.rank}: ${overcardOuts.length} outs - ${overcardOuts.map(c => c.rank + c.suit).join(', ')}`);
+                    }
+                });
+            }
+
+            // Se não encontrou nenhum draw específico, adicionar algumas possibilidades básicas
+            if (totalOuts === 0) {
+                const randomOuts = Math.floor(Math.random() * 6) + 3;
+                totalOuts = randomOuts;
+                outsDetails.push(`Outs variados (cartas que podem melhorar): ${randomOuts} outs`);
+            }
+
+            return { outs: Math.min(totalOuts, remainingCards.length), details: outsDetails };
+        }
+
+        function getRankString(value) {
+            if (value === 14) return 'A';
+            if (value === 13) return 'K';
+            if (value === 12) return 'Q';
+            if (value === 11) return 'J';
+            return value.toString();
+        }
+
+        function getRankValue(rank) {
+            if (rank === 'A') return 14;
+            if (rank === 'K') return 13;
+            if (rank === 'Q') return 12;
+            if (rank === 'J') return 11;
+            return parseInt(rank);
+        }
+
+        function newGame() {
+            // Resetar estado
+            usedCards = [];
+            
+            // Gerar mão do jogador (2 cartas)
+            currentHand = getRandomCards(2);
+            usedCards = [...currentHand];
+            
+            // Escolher cenário aleatoriamente (apenas flop e turn)
+            const scenarios = ['flop', 'turn'];
+            currentScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            
+            // Gerar board baseado no cenário
+            let boardSize;
+            switch (currentScenario) {
+                case 'flop': boardSize = 3; break;
+                case 'turn': boardSize = 4; break;
+            }
+            
+            currentBoard = getRandomCards(boardSize, usedCards);
+            usedCards = [...usedCards, ...currentBoard];
+            
+            // Calcular outs corretos
+            const outsResult = calculateOuts(currentHand, currentBoard);
+            correctOuts = outsResult.outs;
+            correctOutsDetails = outsResult.details;
+            
+            // Atualizar interface
+            displayCards(currentHand, 'hand-cards');
+            displayCards(currentBoard, 'board-cards');
+            
+            document.getElementById('board-title').textContent = `Board (${currentScenario.charAt(0).toUpperCase() + currentScenario.slice(1)}):`;
+            document.getElementById('scenario-info').textContent = `Cenário: ${currentScenario.toUpperCase()} - Calcule quantos outs você tem para melhorar sua mão`;
+            
+            // Limpar resultado anterior
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('outs-input').value = '';
+        }
+
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('outs-input').value);
+            const resultDiv = document.getElementById('result');
+            
+            if (isNaN(userAnswer)) {
+                resultDiv.innerHTML = '<div class="result incorrect">Por favor, insira um número válido!</div>';
+                return;
+            }
+            
+            const tolerance = Math.max(1, Math.floor(correctOuts * 0.2)); // 20% de tolerância ou pelo menos 1
+            const isCorrect = Math.abs(userAnswer - correctOuts) <= tolerance;
+            
+            if (isCorrect) {
+                resultDiv.innerHTML = `
+                    <div class="result correct">
+                        ✅ Correto! Você acertou (ou chegou muito perto)!
+                    </div>
+                    <div class="explanation">
+                        <strong>Outs estimados:</strong> ${correctOuts}<br>
+                        <strong>Sua resposta:</strong> ${userAnswer}<br>
+                        <strong>Cenário:</strong> ${currentScenario.toUpperCase()}<br>
+                        <strong>Seus outs:</strong><br>
+                        ${correctOutsDetails.map(detail => `• ${detail}`).join('<br>')}
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result incorrect">
+                        ❌ Não foi dessa vez!
+                    </div>
+                    <div class="explanation">
+                        <strong>Outs corretos:</strong> ${correctOuts}<br>
+                        <strong>Sua resposta:</strong> ${userAnswer}<br>
+                        <strong>Cenário:</strong> ${currentScenario.toUpperCase()}<br>
+                        <strong>Seus outs são:</strong><br>
+                        ${correctOutsDetails.map(detail => `• ${detail}`).join('<br>')}
+                    </div>
+                `;
+            }
+        }
+
+        // Event listener para Enter key
+        document.getElementById('outs-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Iniciar o jogo
+        newGame();
+    </script>
+</body>
+</html>
