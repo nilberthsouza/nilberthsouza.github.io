@@ -319,7 +319,7 @@
             );
 
             let outsDetails = [];
-            let totalOuts = 0;
+            let outCards = new Set(); // Para evitar duplicatas
             
             // Contar cartas por naipe e rank
             const suitCounts = {};
@@ -335,7 +335,7 @@
                 if (suitCounts[suit] === 4) {
                     const flushOuts = remainingCards.filter(card => card.suit === suit);
                     if (flushOuts.length > 0) {
-                        totalOuts += flushOuts.length;
+                        flushOuts.forEach(card => outCards.add(`${card.rank}${card.suit}`));
                         outsDetails.push(`Flush draw (${suit}): ${flushOuts.length} outs - ${flushOuts.map(c => c.rank + c.suit).join(', ')}`);
                     }
                 }
@@ -355,7 +355,6 @@
                         // Carta abaixo da sequência
                         if (sequence[0] > 2) {
                             const neededRank = sequence[0] - 1;
-                            const neededRankStr = getRankString(neededRank);
                             const availableCards = remainingCards.filter(card => getRankValue(card.rank) === neededRank);
                             straightOuts = straightOuts.concat(availableCards);
                         }
@@ -363,13 +362,12 @@
                         // Carta acima da sequência
                         if (sequence[3] < 14) {
                             const neededRank = sequence[3] + 1;
-                            const neededRankStr = getRankString(neededRank);
                             const availableCards = remainingCards.filter(card => getRankValue(card.rank) === neededRank);
                             straightOuts = straightOuts.concat(availableCards);
                         }
                         
                         if (straightOuts.length > 0) {
-                            totalOuts += straightOuts.length;
+                            straightOuts.forEach(card => outCards.add(`${card.rank}${card.suit}`));
                             outsDetails.push(`Straight draw: ${straightOuts.length} outs - ${straightOuts.map(c => c.rank + c.suit).join(', ')}`);
                         }
                     }
@@ -386,47 +384,49 @@
                     const gutshotOuts = remainingCards.filter(card => getRankValue(card.rank) === missingRank);
                     
                     if (gutshotOuts.length > 0 && !outsDetails.some(detail => detail.includes('Straight draw'))) {
-                        totalOuts += gutshotOuts.length;
-                        outsDetails.push(`Gutshot straight: ${gutshotOuts.length} outs - ${gutshotOuts.map(c => c.rank + c.suit).join(', ')}`);
+                        const newGutshotOuts = gutshotOuts.filter(card => !outCards.has(`${card.rank}${card.suit}`));
+                        if (newGutshotOuts.length > 0) {
+                            newGutshotOuts.forEach(card => outCards.add(`${card.rank}${card.suit}`));
+                            outsDetails.push(`Gutshot straight: ${newGutshotOuts.length} outs - ${newGutshotOuts.map(c => c.rank + c.suit).join(', ')}`);
+                        }
                     }
                 }
             }
 
-            // Verificar pair draws (melhorar para two pair, trips, etc.)
+            // Verificar pair draws e overcards (sem duplicar)
             const handRanks = hand.map(card => card.rank);
+            const boardHighCard = Math.max(...board.map(card => getRankValue(card.rank)));
+            const hasPair = handRanks[0] === handRanks[1] || handRanks.some(rank => board.some(card => card.rank === rank));
+            
             handRanks.forEach(rank => {
-                if (!board.some(card => card.rank === rank)) {
-                    const pairOuts = remainingCards.filter(card => card.rank === rank);
-                    if (pairOuts.length > 0) {
-                        totalOuts += pairOuts.length;
-                        outsDetails.push(`Par de ${rank}s: ${pairOuts.length} outs - ${pairOuts.map(c => c.rank + c.suit).join(', ')}`);
+                const pairOuts = remainingCards.filter(card => card.rank === rank);
+                const newPairOuts = pairOuts.filter(card => !outCards.has(`${card.rank}${card.suit}`));
+                
+                if (newPairOuts.length > 0) {
+                    newPairOuts.forEach(card => outCards.add(`${card.rank}${card.suit}`));
+                    
+                    // Determinar se é par ou overcard
+                    const isOvercard = getRankValue(rank) > boardHighCard && !hasPair;
+                    const hasCardOnBoard = board.some(card => card.rank === rank);
+                    
+                    if (hasCardOnBoard) {
+                        outsDetails.push(`Par de ${rank}s: ${newPairOuts.length} outs - ${newPairOuts.map(c => c.rank + c.suit).join(', ')}`);
+                    } else if (isOvercard) {
+                        outsDetails.push(`Overcard ${rank}: ${newPairOuts.length} outs - ${newPairOuts.map(c => c.rank + c.suit).join(', ')}`);
+                    } else {
+                        outsDetails.push(`Par de ${rank}s: ${newPairOuts.length} outs - ${newPairOuts.map(c => c.rank + c.suit).join(', ')}`);
                     }
                 }
             });
 
-            // Verificar overcards (apenas se não temos par)
-            const hasPair = handRanks[0] === handRanks[1] || handRanks.some(rank => board.some(card => card.rank === rank));
-            if (!hasPair) {
-                const boardHighCard = Math.max(...board.map(card => getRankValue(card.rank)));
-                const overcards = hand.filter(card => getRankValue(card.rank) > boardHighCard);
-                
-                overcards.forEach(card => {
-                    const overcardOuts = remainingCards.filter(c => c.rank === card.rank);
-                    if (overcardOuts.length > 0) {
-                        totalOuts += overcardOuts.length;
-                        outsDetails.push(`Overcard ${card.rank}: ${overcardOuts.length} outs - ${overcardOuts.map(c => c.rank + c.suit).join(', ')}`);
-                    }
-                });
-            }
-
             // Se não encontrou nenhum draw específico, adicionar algumas possibilidades básicas
-            if (totalOuts === 0) {
+            if (outCards.size === 0) {
                 const randomOuts = Math.floor(Math.random() * 6) + 3;
-                totalOuts = randomOuts;
                 outsDetails.push(`Outs variados (cartas que podem melhorar): ${randomOuts} outs`);
+                return { outs: randomOuts, details: outsDetails };
             }
 
-            return { outs: Math.min(totalOuts, remainingCards.length), details: outsDetails };
+            return { outs: outCards.size, details: outsDetails };
         }
 
         function getRankString(value) {
