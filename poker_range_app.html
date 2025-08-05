@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Range Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        select, input, button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        select, input {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            min-width: 150px;
+        }
+
+        button {
+            background: #ff6b35;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: 2px solid;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.fold {
+            border-color: #666;
+            color: #666;
+        }
+
+        .action-btn.check {
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        .action-btn.call {
+            border-color: #FFC107;
+            color: #FFC107;
+        }
+
+        .action-btn.raise {
+            border-color: #F44336;
+            color: #F44336;
+        }
+
+        .action-btn.active {
+            background-color: currentColor;
+            color: white;
+        }
+
+        .poker-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 3px;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 30px auto;
+            max-width: 700px;
+        }
+
+        .hand-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            color: #333;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            user-select: none;
+            border: 1px solid #ddd;
+        }
+
+        .hand-cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10;
+            position: relative;
+        }
+
+        .hand-cell.suited {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+
+        .hand-cell.fold {
+            background: #f0f0f0;
+            color: #666;
+            border-color: #ddd;
+        }
+
+        .hand-cell.check {
+            background: #4CAF50;
+            color: white;
+            border-color: #388E3C;
+        }
+
+        .hand-cell.call {
+            background: #FFC107;
+            color: #333;
+            border-color: #FFA000;
+        }
+
+        .hand-cell.raise {
+            background: #F44336;
+            color: white;
+            border-color: #D32F2F;
+        }
+
+        .legend {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .category-management {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .saved-ranges {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .range-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .range-info h4 {
+            margin-bottom: 5px;
+            color: #ffeb3b;
+        }
+
+        .range-info p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .range-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #2a5298;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            color: white;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        @media (max-width: 768px) {
+            .poker-grid {
+                gap: 2px;
+                padding: 10px;
+            }
+            
+            .hand-cell {
+                font-size: 0.7rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+
+            .legend {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🂡 Poker Range Analyzer</h1>
+            <p>Analise e salve seus ranges de poker</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Categoria:</label>
+                <select id="categorySelect">
+                    <option value="">Selecione uma categoria</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Grupo:</label>
+                <select id="groupSelect">
+                    <option value="">Selecione um grupo</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Posição:</label>
+                <select id="positionSelect">
+                    <option value="">Selecione uma posição</option>
+                </select>
+            </div>
+            <button id="newCategoryBtn">Nova Categoria</button>
+            <button id="editCategoryBtn">Editar Categoria</button>
+            <button id="saveRangeBtn">Salvar Range</button>
+            <button id="clearGridBtn">Limpar Grid</button>
+        </div>
+
+        <div class="obs-section" style="max-width: 700px; margin: 0 auto 20px auto;">
+            <div class="control-group">
+                <label>Observações:</label>
+                <textarea id="obsTextarea" placeholder="Adicione suas observações sobre este range..." style="width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255,255,255,0.9); color: #333; height: 60px; resize: vertical;"></textarea>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn fold active" data-action="fold">Fold</button>
+            <button class="action-btn check" data-action="check">Check</button>
+            <button class="action-btn call" data-action="call">Call</button>
+            <button class="action-btn raise" data-action="raise">Raise</button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f0f0f0; border-color: #666;"></div>
+                <span>Fold</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4CAF50;"></div>
+                <span>Check</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FFC107;"></div>
+                <span>Call</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #F44336;"></div>
+                <span>Raise</span>
+            </div>
+        </div>
+
+        <div id="pokerGrid" class="poker-grid"></div>
+
+        <div class="saved-ranges">
+            <h3>Ranges Salvos</h3>
+            <div id="savedRangesList">
+                <p>Nenhum range salvo ainda.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Nova Categoria -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Nova Categoria</h3>
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label>Nome da Categoria:</label>
+                    <input type="text" id="categoryName" placeholder="Ex: PREFLOP" required>
+                </div>
+                <div class="form-group">
+                    <label>Grupos (um por linha):</label>
+                    <textarea id="categoryGroups" placeholder="Raise First In&#10;3Bet pre flop&#10;Cold Call" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Posições (uma por linha):</label>
+                    <textarea id="categoryPositions" placeholder="UTG&#10;UTG+1&#10;HJ&#10;CO&#10;BTN&#10;SB" required></textarea>
+                </div>
+                <button type="submit">Criar Categoria</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+        let currentAction = 'fold';
+        let gridState = {};
+        let categories = [];
+        let savedRanges = [];
+
+        // Função principal de inicialização
+        function init() {
+            console.log('Inicializando app...');
+            loadData();
+            createPokerGrid();
+            setupEventListeners();
+            updateCategorySelect();
+            updateSavedRangesList();
+            console.log('App inicializado com sucesso!');
+        }
+
+        // Carrega dados do localStorage
+        function loadData() {
+            try {
+                const savedCategories = localStorage.getItem('pokerCategories');
+                const savedRangesData = localStorage.getItem('pokerRanges');
+                
+                categories = savedCategories ? JSON.parse(savedCategories) : getDefaultCategories();
+                savedRanges = savedRangesData ? JSON.parse(savedRangesData) : [];
+                
+                console.log('Dados carregados:', { categories: categories.length, ranges: savedRanges.length });
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                categories = getDefaultCategories();
+                savedRanges = [];
+            }
+        }
+
+        // Salva dados no localStorage
+        function saveData() {
+            try {
+                localStorage.setItem('pokerCategories', JSON.stringify(categories));
+                localStorage.setItem('pokerRanges', JSON.stringify(savedRanges));
+                console.log('Dados salvos com sucesso');
+            } catch (error) {
+                console.error('Erro ao salvar dados:', error);
+            }
+        }
+
+        // Categorias padrão
+        function getDefaultCategories() {
+            return [
+                {
+                    name: 'PREFLOP',
+                    groups: ['Raise First In', '3Bet pre flop'],
+                    positions: ['UTG', 'UTG+1', 'HJ', 'CO', 'BTN', 'SB']
+                },
+                {
+                    name: 'FLOP',
+                    groups: ['Bordo Rainbow Conectado - Overcards'],
+                    positions: ['UTG vs BB (IP) - CBET', 'UTG vs BB (IP) - Check']
+                }
+            ];
+        }
+
+        // Cria o grid de poker
+        function createPokerGrid() {
+            const grid = document.getElementById('pokerGrid');
+            if (!grid) {
+                console.error('Grid element not found');
+                return;
+            }
+
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < ranks.length; i++) {
+                for (let j = 0; j < ranks.length; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'hand-cell fold';
+                    
+                    let handText;
+                    let handKey;
+                    
+                    if (i === j) {
+                        // Pares
+                        handText = ranks[i] + ranks[j];
+                        handKey = handText;
+                    } else if (i < j) {
+                        // Suited
+                        handText = ranks[i] + ranks[j] + 's';
+                        handKey = handText;
+                        cell.classList.add('suited');
+                    } else {
+                        // Offsuit
+                        handText = ranks[j] + ranks[i] + 'o';
+                        handKey = handText;
+                    }
+                    
+                    cell.textContent = handText;
+                    cell.dataset.hand = handKey;
+                    
+                    // Aplica estado salvo se existir
+                    if (gridState[handKey]) {
+                        cell.className = 'hand-cell ' + gridState[handKey];
+                        if (handKey.includes('s') && !handKey.includes('o')) {
+                            cell.classList.add('suited');
+                        }
+                    }
+                    
+                    // Event listener para clique
+                    cell.addEventListener('click', function() {
+                        toggleHandAction(this, handKey);
+                    });
+                    
+                    grid.appendChild(cell);
+                }
+            }
+            
+            console.log('Grid criado com', grid.children.length, 'células');
+        }
+
+        // Alterna ação da mão
+        function toggleHandAction(cell, handKey) {
+            // Remove todas as classes de ação
+            cell.classList.remove('fold', 'check', 'call', 'raise');
+            
+            // Adiciona a nova ação
+            cell.classList.add(currentAction);
+            
+            // Mantém classe suited se necessário
+            if (handKey.includes('s') && !handKey.includes('o')) {
+                cell.classList.add('suited');
+            }
+            
+            // Salva estado
+            gridState[handKey] = currentAction;
+            console.log('Mão', handKey, 'alterada para', currentAction);
+        }
+
+        // Configura event listeners
+        function setupEventListeners() {
+            // Botões de ação
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentAction = this.dataset.action;
+                    console.log('Ação selecionada:', currentAction);
+                });
+            });
+
+            // Selects
+            const categorySelect = document.getElementById('categorySelect');
+            const groupSelect = document.getElementById('groupSelect');
+            
+            if (categorySelect) {
+                categorySelect.addEventListener('change', updateGroupSelect);
+            }
+            if (groupSelect) {
+                groupSelect.addEventListener('change', updatePositionSelect);
+            }
+            
+            // Botões principais
+            const newCategoryBtn = document.getElementById('newCategoryBtn');
+            const saveRangeBtn = document.getElementById('saveRangeBtn');
+            const clearGridBtn = document.getElementById('clearGridBtn');
+            
+            if (newCategoryBtn) {
+                newCategoryBtn.addEventListener('click', openCategoryModal);
+            }
+            if (saveRangeBtn) {
+                saveRangeBtn.addEventListener('click', saveCurrentRange);
+            }
+            if (clearGridBtn) {
+                clearGridBtn.addEventListener('click', clearGrid);
+            }
+
+            // Modal
+            const closeBtn = document.querySelector('.close');
+            const categoryForm = document.getElementById('categoryForm');
+            const modal = document.getElementById('categoryModal');
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeCategoryModal);
+            }
+            if (categoryForm) {
+                categoryForm.addEventListener('submit', createNewCategory);
+            }
+            
+            // Fecha modal clicando fora
+            window.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeCategoryModal();
+                }
+            });
+        }
+
+        // Atualiza select de categorias
+        function updateCategorySelect() {
+            const select = document.getElementById('categorySelect');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Selecione uma categoria</option>';
+            
+            categories.forEach((category, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = category.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Atualiza select de grupos
+        function updateGroupSelect() {
+            const categoryIndex = document.getElementById('categorySelect').value;
+            const groupSelect = document.getElementById('groupSelect');
+            
+            if (!groupSelect) return;
+            
+            groupSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+            
+            if (categoryIndex !== '') {
+                const category = categories[categoryIndex];
+                if (category && category.groups) {
+                    category.groups.forEach(group => {
+                        const option = document.createElement('option');
+                        option.value = group;
+                        option.textContent = group;
+                        groupSelect.appendChild(option);
+                    });
+                }
+            }
+            
+            updatePositionSelect();
+        }
+
+        // Atualiza select de posições
+        function updatePositionSelect() {
+            const categoryIndex = document.getElementById('categorySelect').value;
+            const positionSelect = document.getElementById('positionSelect');
+            
+            if (!positionSelect) return;
+            
+            positionSelect.innerHTML = '<option value="">Selecione uma posição</option>';
+            
+            if (categoryIndex !== '') {
+                const category = categories[categoryIndex];
+                if (category && category.positions) {
+                    category.positions.forEach(position => {
+                        const option = document.createElement('option');
+                        option.value = position;
+                        option.textContent = position;
+                        positionSelect.appendChild(option);
+                    });
+                }
+            }
+        }
+
+        // Abre modal de categoria
+        function openCategoryModal() {
+            const modal = document.getElementById('categoryModal');
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        // Fecha modal de categoria
+        function closeCategoryModal() {
+            const modal = document.getElementById('categoryModal');
+            const form = document.getElementById('categoryForm');
+            
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            if (form) {
+                form.reset();
+            }
+        }
+
+        // Cria nova categoria
+        function createNewCategory(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('categoryName').value.trim();
+            const groupsText = document.getElementById('categoryGroups').value.trim();
+            const positionsText = document.getElementById('categoryPositions').value.trim();
+            
+            if (!name || !groupsText || !positionsText) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+            
+            const groups = groupsText.split('\n').map(g => g.trim()).filter(g => g);
+            const positions = positionsText.split('\n').map(p => p.trim()).filter(p => p);
+            
+            categories.push({ name, groups, positions });
+            saveData();
+            updateCategorySelect();
+            closeCategoryModal();
+            
+            alert('Categoria criada com sucesso!');
+        }
+
+        // Salva range atual
+        function saveCurrentRange() {
+            const categoryIndex = document.getElementById('categorySelect').value;
+            const group = document.getElementById('groupSelect').value;
+            const position = document.getElementById('positionSelect').value;
+            
+            if (!categoryIndex || !group || !position) {
+                alert('Por favor, selecione categoria, grupo e posição antes de salvar.');
+                return;
+            }
+            
+            const category = categories[categoryIndex];
+            const rangeName = category.name + ' - ' + group + ' - ' + position;
+            
+            // Remove range existente com mesmo nome
+            savedRanges = savedRanges.filter(range => range.name !== rangeName);
+            
+            // Adiciona novo range
+            savedRanges.push({
+                name: rangeName,
+                category: category.name,
+                group: group,
+                position: position,
+                hands: Object.assign({}, gridState),
+                timestamp: new Date().toISOString()
+            });
+            
+            saveData();
+            updateSavedRangesList();
+            alert('Range salvo com sucesso!');
+        }
+
+        // Carrega range
+        function loadRange(rangeIndex) {
+            const range = savedRanges[rangeIndex];
+            if (!range) return;
+            
+            gridState = Object.assign({}, range.hands);
+            createPokerGrid();
+            
+            // Atualiza selects
+            const categoryIndex = categories.findIndex(cat => cat.name === range.category);
+            if (categoryIndex >= 0) {
+                document.getElementById('categorySelect').value = categoryIndex;
+                updateGroupSelect();
+                document.getElementById('groupSelect').value = range.group;
+                updatePositionSelect();
+                document.getElementById('positionSelect').value = range.position;
+            }
+        }
+
+        // Deleta range
+        function deleteRange(rangeIndex) {
+            if (confirm('Tem certeza que deseja excluir este range?')) {
+                savedRanges.splice(rangeIndex, 1);
+                saveData();
+                updateSavedRangesList();
+            }
+        }
+
+        // Limpa grid
+        function clearGrid() {
+            if (confirm('Tem certeza que deseja limpar o grid?')) {
+                gridState = {};
+                createPokerGrid();
+            }
+        }
+
+        // Atualiza lista de ranges salvos
+        function updateSavedRangesList() {
+            const container = document.getElementById('savedRangesList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (savedRanges.length === 0) {
+                container.innerHTML = '<p>Nenhum range salvo ainda.</p>';
+                return;
+            }
+            
+            savedRanges.forEach((range, index) => {
+                const item = document.createElement('div');
+                item.className = 'range-item';
+                
+                item.innerHTML = `
+                    <div class="range-info">
+                        <h4>${range.name}</h4>
+                        <p>Salvo em: ${new Date(range.timestamp).toLocaleString('pt-BR')}</p>
+                    </div>
+                    <div class="range-actions">
+                        <button class="btn-small" onclick="loadRange(${index})">Carregar</button>
+                        <button class="btn-small" onclick="deleteRange(${index})">Excluir</button>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        // Torna funções globais para uso nos botões HTML
+        window.loadRange = loadRange;
+        window.deleteRange = deleteRange;
+
+        // Inicializa quando o DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
