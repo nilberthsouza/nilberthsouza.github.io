@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Apostas Múltiplas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+
+        .stake-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+
+        .stake-input {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stake-input label {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 120px;
+        }
+
+        .stake-input input {
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .stake-input input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .matches-section {
+            margin-bottom: 30px;
+        }
+
+        .match-card {
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .match-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+        }
+
+        .match-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .match-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .teams-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .team-input {
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .team-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .vs-text {
+            font-weight: bold;
+            color: #7f8c8d;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .odds-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .odd-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .odd-group.selected {
+            background: #e8f4fd;
+            border: 2px solid #3498db;
+        }
+
+        .odd-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .odd-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper label {
+            font-size: 12px;
+            color: #2c3e50;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .add-match-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto 30px;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .add-match-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto 30px;
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .results-title {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .combinations-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .combination-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .combination-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .combination-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .combination-title {
+            font-weight: 600;
+            color: #2c3e50;
+            flex: 1;
+        }
+
+        .combination-odds {
+            background: #e8f4fd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #3498db;
+            font-size: 14px;
+        }
+
+        .combination-stake {
+            background: #d5f4e6;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 14px;
+        }
+
+        .combination-details {
+            font-size: 14px;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c0392b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .teams-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .vs-text {
+                order: -1;
+            }
+
+            .odds-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stake-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .combination-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚽ Calculadora de Apostas Múltiplas</h1>
+        
+        <div class="stake-section">
+            <div class="stake-input">
+                <label for="totalStake">Stake Total (R$):</label>
+                <input type="number" id="totalStake" placeholder="100.00" step="0.01" min="0">
+            </div>
+        </div>
+
+        <div class="matches-section" id="matchesContainer">
+            <!-- Confrontos serão adicionados aqui -->
+        </div>
+
+        <button class="add-match-btn" onclick="addMatch()">➕ Adicionar Confronto</button>
+        
+        <button class="calculate-btn" onclick="calculateCombinations()">🧮 Calcular Combinações</button>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <h2 class="results-title">📊 Resultados</h2>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let matchCount = 0;
+
+        function addMatch() {
+            matchCount++;
+            const container = document.getElementById('matchesContainer');
+            
+            const matchCard = document.createElement('div');
+            matchCard.className = 'match-card fade-in';
+            matchCard.id = `match-${matchCount}`;
+            
+            matchCard.innerHTML = `
+                <div class="match-header">
+                    <div class="match-title">Confronto ${matchCount}</div>
+                    <button class="remove-btn" onclick="removeMatch(${matchCount})">🗑️ Remover</button>
+                </div>
+                
+                <div class="teams-row">
+                    <input type="text" class="team-input" placeholder="Time da Casa" id="homeTeam-${matchCount}">
+                    <div class="vs-text">VS</div>
+                    <input type="text" class="team-input" placeholder="Time Visitante" id="awayTeam-${matchCount}">
+                </div>
+                
+                <div class="odds-row">
+                    <div class="odd-group" id="homeGroup-${matchCount}">
+                        <div class="odd-label">Casa</div>
+                        <input type="number" class="odd-input" placeholder="2.50" step="0.01" min="1" id="homeOdd-${matchCount}">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="homeCheck-${matchCount}" onchange="updateOddGroup(${matchCount}, 'home')">
+                            <label for="homeCheck-${matchCount}">Incluir</label>
+                        </div>
+                    </div>
+                    
+                    <div class="odd-group" id="drawGroup-${matchCount}">
+                        <div class="odd-label">Empate</div>
+                        <input type="number" class="odd-input" placeholder="3.20" step="0.01" min="1" id="drawOdd-${matchCount}">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="drawCheck-${matchCount}" onchange="updateOddGroup(${matchCount}, 'draw')">
+                            <label for="drawCheck-${matchCount}">Incluir</label>
+                        </div>
+                    </div>
+                    
+                    <div class="odd-group" id="awayGroup-${matchCount}">
+                        <div class="odd-label">Visitante</div>
+                        <input type="number" class="odd-input" placeholder="2.80" step="0.01" min="1" id="awayOdd-${matchCount}">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="awayCheck-${matchCount}" onchange="updateOddGroup(${matchCount}, 'away')">
+                            <label for="awayCheck-${matchCount}">Incluir</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(matchCard);
+        }
+
+        function removeMatch(matchId) {
+            const matchElement = document.getElementById(`match-${matchId}`);
+            if (matchElement) {
+                matchElement.style.transform = 'translateX(-100%)';
+                matchElement.style.opacity = '0';
+                setTimeout(() => {
+                    matchElement.remove();
+                }, 300);
+            }
+        }
+
+        function updateOddGroup(matchId, type) {
+            const checkbox = document.getElementById(`${type}Check-${matchId}`);
+            const group = document.getElementById(`${type}Group-${matchId}`);
+            
+            if (checkbox.checked) {
+                group.classList.add('selected');
+            } else {
+                group.classList.remove('selected');
+            }
+        }
+
+        function getMatches() {
+            const matches = [];
+            const matchElements = document.querySelectorAll('.match-card');
+            
+            matchElements.forEach(matchElement => {
+                const matchId = matchElement.id.replace('match-', '');
+                const homeTeam = document.getElementById(`homeTeam-${matchId}`).value || `Time Casa ${matchId}`;
+                const awayTeam = document.getElementById(`awayTeam-${matchId}`).value || `Time Visitante ${matchId}`;
+                
+                const match = {
+                    id: matchId,
+                    homeTeam,
+                    awayTeam,
+                    options: []
+                };
+
+                // Verificar opções selecionadas
+                if (document.getElementById(`homeCheck-${matchId}`).checked) {
+                    const odd = parseFloat(document.getElementById(`homeOdd-${matchId}`).value) || 2.0;
+                    match.options.push({
+                        type: 'home',
+                        label: homeTeam,
+                        odd: odd
+                    });
+                }
+
+                if (document.getElementById(`drawCheck-${matchId}`).checked) {
+                    const odd = parseFloat(document.getElementById(`drawOdd-${matchId}`).value) || 3.0;
+                    match.options.push({
+                        type: 'draw',
+                        label: 'Empate',
+                        odd: odd
+                    });
+                }
+
+                if (document.getElementById(`awayCheck-${matchId}`).checked) {
+                    const odd = parseFloat(document.getElementById(`awayOdd-${matchId}`).value) || 2.5;
+                    match.options.push({
+                        type: 'away',
+                        label: awayTeam,
+                        odd: odd
+                    });
+                }
+
+                if (match.options.length > 0) {
+                    matches.push(match);
+                }
+            });
+
+            return matches;
+        }
+
+        function generateCombinations(matches) {
+            if (matches.length === 0) return [];
+
+            function cartesianProduct(arrays) {
+                return arrays.reduce((acc, curr) => {
+                    const result = [];
+                    acc.forEach(a => {
+                        curr.forEach(c => {
+                            result.push([...a, c]);
+                        });
+                    });
+                    return result;
+                }, [[]]);
+            }
+
+            const optionsArrays = matches.map(match => match.options);
+            const combinations = cartesianProduct(optionsArrays);
+
+            return combinations.map((combination, index) => {
+                const totalOdd = combination.reduce((acc, option) => acc * option.odd, 1);
+                
+                return {
+                    id: index + 1,
+                    combination,
+                    totalOdd: totalOdd,
+                    matches: matches
+                };
+            });
+        }
+
+        function calculateDutching(combinations, totalStake) {
+            // Calcular a probabilidade implícita de cada combinação
+            const probabilities = combinations.map(comb => 1 / comb.totalOdd);
+            const totalProbability = probabilities.reduce((sum, prob) => sum + prob, 0);
+
+            // Distribuir a stake proporcionalmente às probabilidades
+            return combinations.map((combination, index) => {
+                const stake = (probabilities[index] / totalProbability) * totalStake;
+                const potentialReturn = stake * combination.totalOdd;
+                const profit = potentialReturn - totalStake;
+
+                return {
+                    ...combination,
+                    stake: stake,
+                    potentialReturn: potentialReturn,
+                    profit: profit
+                };
+            });
+        }
+
+        function calculateCombinations() {
+            const matches = getMatches();
+            const totalStake = parseFloat(document.getElementById('totalStake').value) || 100;
+
+            if (matches.length === 0) {
+                showError('Adicione pelo menos um confronto com uma opção selecionada.');
+                return;
+            }
+
+            // Verificar se todos os confrontos têm pelo menos uma opção
+            const invalidMatches = matches.filter(match => match.options.length === 0);
+            if (invalidMatches.length > 0) {
+                showError('Todos os confrontos devem ter pelo menos uma opção selecionada.');
+                return;
+            }
+
+            const combinations = generateCombinations(matches);
+            const dutchingResults = calculateDutching(combinations, totalStake);
+
+            displayResults(dutchingResults, totalStake);
+        }
+
+        function showError(message) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsContent.innerHTML = `<div class="error-message">${message}</div>`;
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function displayResults(results, totalStake) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsContent = document.getElementById('resultsContent');
+
+            if (results.length === 0) {
+                showError('Nenhuma combinação válida encontrada.');
+                return;
+            }
+
+            const averageProfit = results.reduce((sum, result) => sum + result.profit, 0) / results.length;
+            const totalStakeUsed = results.reduce((sum, result) => sum + result.stake, 0);
+
+            let html = `
+                <div class="summary">
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-label">Total de Combinações</div>
+                            <div class="summary-value">${results.length}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Stake Total</div>
+                            <div class="summary-value">R$ ${totalStakeUsed.toFixed(2)}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Lucro Médio</div>
+                            <div class="summary-value">R$ ${averageProfit.toFixed(2)}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">ROI Médio</div>
+                            <div class="summary-value">${((averageProfit / totalStake) * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="combinations-list">
+            `;
+
+            results.forEach(result => {
+                const combinationDetails = result.combination.map((option, index) => {
+                    const match = result.matches[index];
+                    return `${match.homeTeam} vs ${match.awayTeam}: ${option.label} (${option.odd.toFixed(2)})`;
+                }).join(' • ');
+
+                html += `
+                    <div class="combination-card">
+                        <div class="combination-header">
+                            <div class="combination-title">Múltipla ${result.id}</div>
+                            <div class="combination-odds">Odd: ${result.totalOdd.toFixed(2)}</div>
+                            <div class="combination-stake">Apostar: R$ ${result.stake.toFixed(2)}</div>
+                        </div>
+                        <div class="combination-details">
+                            ${combinationDetails}
+                            <br><strong>Retorno Potencial:</strong> R$ ${result.potentialReturn.toFixed(2)} | 
+                            <strong>Lucro:</strong> R$ ${result.profit.toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            resultsContent.innerHTML = html;
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Adicionar um confronto inicial
+        addMatch();
+    </script>
+</body>
+</html>
