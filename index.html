@@ -4,83 +4,325 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="google-adsense-account" content="ca-pub-6260088122840241">
-  <title>Calculadoras de Apostas</title>
+  <title>Calculadoras de Apostas & Poker</title>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6260088122840241"
      crossorigin="anonymous"></script>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background particles */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+      animation: float 20s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeInDown 1s ease-out;
+    }
+
+    .main-title {
+      font-size: 3.5rem;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 4px 8px rgba(0,0,0,0.3);
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #fff, #e0e7ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.3rem;
+      color: rgba(255,255,255,0.9);
+      font-weight: 300;
+      text-shadow: 1px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .sections-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+
+    .section {
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      animation: fadeInUp 1s ease-out;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .section:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+    }
+
+    .sports-betting {
+      border-left: 6px solid #2563eb;
+    }
+
+    .poker-section {
+      border-left: 6px solid #dc2626;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 25px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .sports-betting .section-title {
+      color: #2563eb;
+    }
+
+    .poker-section .section-title {
+      color: #dc2626;
+    }
+
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-
-    h1 {
-      margin-bottom: 30px;
-      color: #333;
-    }
-
-    .button-container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      width: 90%;
-      max-width: 300px;
-    }
-
-    a.button {
-      text-align: center;
-      background-color: #007BFF;
+      font-size: 1.5rem;
       color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 16px;
-      transition: background-color 0.2s ease;
     }
 
-    a.button:hover {
-      background-color: #0056b3;
+    .sports-betting .section-icon {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+
+    .poker-section .section-icon {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+    }
+
+    .calc-button {
+      display: block;
+      text-align: center;
+      padding: 18px 25px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .calc-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .calc-button:hover::before {
+      left: 100%;
+    }
+
+    .sports-betting .calc-button {
+      background: linear-gradient(135deg, #3b82f6, #1e40af);
+      color: white;
+    }
+
+    .sports-betting .calc-button:hover {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .poker-section .calc-button {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: white;
+    }
+
+    .poker-section .calc-button:hover {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 30px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      margin-top: 40px;
+      animation: fadeIn 1.5s ease-out;
+    }
+
+    .footer-text {
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 500;
+      text-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .sections-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      
+      .section {
+        padding: 30px 25px;
+      }
+      
+      .main-title {
+        font-size: 2.5rem;
+      }
+      
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .container {
+        padding: 20px 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-title {
+        font-size: 2rem;
+      }
+      
+      .section-title {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <header class="header">
+      <h1 class="main-title">Calculadoras Profissionais</h1>
+      <p class="subtitle">Ferramentas avançadas para apostas esportivas e poker</p>
+    </header>
 
-  <h1>Calculadoras de Apostas</h1>
-  <div class="button-container">
-    <a class="button" href="poisson_calculator.html">Calculadora de Poisson</a>
-    <a class="button" href="dutching_calculator.html">Calculadora Dutching</a>
-    <a class="button" href="football_probability_app.html">Probabilidade Futebol</a>
-    <a class="button" href="arbitrage_calculator.html">Calculadora Arbitragem - 3 Resultados</a>
-    <a class="button" href="arbitrage_calculator_2way.html">Calculadora Arbitragem - 2 Resultados</a>
-    <a class="button" href="stradle.html">Stradle (Gols) </a>
-    <a class="button" href="collar_calculator.html">Collar (Gols)</a>
+    <div class="sections-container">
+      <!-- Seção de Apostas Esportivas em Azul -->
+      <section class="section sports-betting">
+        <h2 class="section-title">
+          <div class="section-icon">⚽</div>
+          Apostas Esportivas
+        </h2>
+        <div class="button-grid">
+          <a class="calc-button" href="poisson_calculator.html">📊 Calculadora de Poisson</a>
+          <a class="calc-button" href="dutching_calculator.html">💰 Calculadora Dutching</a>
+          <a class="calc-button" href="football_probability_app.html">⚽ Probabilidade Futebol</a>
+          <a class="calc-button" href="arbitrage_calculator.html">🎯 Arbitragem - 3 Resultados</a>
+          <a class="calc-button" href="arbitrage_calculator_2way.html">🎯 Arbitragem - 2 Resultados</a>
+          <a class="calc-button" href="stradle.html">🥅 Stradle (Gols)</a>
+          <a class="calc-button" href="collar_calculator.html">🎲 Collar (Gols)</a>
+          <a class="calc-button" href="football_betting_app.html">📈 Calculadora de Múltiplas</a>
+        </div>
+      </section>
 
+      <!-- Seção de Poker em Vermelho -->
+      <section class="section poker-section">
+        <h2 class="section-title">
+          <div class="section-icon">♠️</div>
+          Poker & Jogos
+        </h2>
+        <div class="button-grid">
+          <a class="calc-button" href="poker_stack_trainer.html">💵 Poker Stack Trainer</a>
+          <a class="calc-button" href="poker-outs-trainer.html">🎴 Poker Outs Trainer</a>
+          <a class="calc-button" href="poker_outs_app.html">📱 Poker Outs App</a>
+          <a class="calc-button" href="poker_ev_trainer.html">📊 Poker EV Trainer</a>
+          <a class="calc-button" href="poker-analyzer.html">🔍 Poker Analyzer</a>
+          <a class="calc-button" href="dominance.html">👑 Dominance</a>
+        </div>
+      </section>
+    </div>
 
+    <footer class="footer">
+      <p class="footer-text">🚀 Powered by Nilberth - Desenvolvido com excelência</p>
+    </footer>
   </div>
-
-  
-  <h1>Poker </h1>
-  <div class="button-container">
-    <a class="button" href="poker_stack_trainer.html">poker stack trainer</a>
-    <a class="button" href="poker-outs-trainer.html">poker outs trainer</a>
-    <a class="button" href="poker_outs_app.html">poker outs app</a>
-     <a class="button" href="poker_ev_trainer.html">Poker EV trainer</a>
-     <a class="button" href="poker-analyzer.html">poker analyzer</a>
-     <a class="button" href="dominance.html">dominance</a>
-
-
-
-  </div>
-
-  
-    <footer>
-    Powered by Nilberth
-  </footer>
-
 </body>
 </html>
