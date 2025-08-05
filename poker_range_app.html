@@ -222,14 +222,99 @@
             border-radius: 10px;
         }
 
+        .category-group {
+            margin-bottom: 25px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .category-header {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .category-header:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .category-header h3 {
+            margin: 0;
+            color: #ffeb3b;
+            font-size: 1.2rem;
+        }
+
+        .category-toggle {
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .category-content {
+            display: none;
+            padding: 10px 0;
+        }
+
+        .category-content.expanded {
+            display: block;
+        }
+
+        .group-section {
+            margin-bottom: 20px;
+        }
+
+        .group-header {
+            background: rgba(255,255,255,0.08);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .group-header:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .group-header h4 {
+            margin: 0;
+            color: #81C784;
+            font-size: 1rem;
+        }
+
+        .group-toggle {
+            font-size: 1rem;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .group-content {
+            display: none;
+            padding: 0 20px;
+        }
+
+        .group-content.expanded {
+            display: block;
+        }
+
         .range-item {
             background: rgba(255,255,255,0.1);
             padding: 15px;
-            margin: 10px 0;
+            margin: 8px 0;
             border-radius: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-left: 3px solid #2196F3;
         }
 
         .range-info h4 {
@@ -408,13 +493,19 @@
                 <p>Nenhum range salvo ainda.</p>
             </div>
         </div>
+
+        <!-- Botões de ação rápida -->
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="addGroupBtn" style="background: #2196F3; margin: 0 5px;">+ Grupo</button>
+            <button id="addPositionBtn" style="background: #9C27B0; margin: 0 5px;">+ Posição</button>
+        </div>
     </div>
 
-    <!-- Modal para Nova Categoria -->
+    <!-- Modal para Nova/Editar Categoria -->
     <div id="categoryModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h3>Nova Categoria</h3>
+            <h3 id="modalTitle">Nova Categoria</h3>
             <form id="categoryForm">
                 <div class="form-group">
                     <label>Nome da Categoria:</label>
@@ -428,7 +519,49 @@
                     <label>Posições (uma por linha):</label>
                     <textarea id="categoryPositions" placeholder="UTG&#10;UTG+1&#10;HJ&#10;CO&#10;BTN&#10;SB" required></textarea>
                 </div>
-                <button type="submit">Criar Categoria</button>
+                <button type="submit" id="submitCategoryBtn">Criar Categoria</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar Grupo -->
+    <div id="addGroupModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Adicionar Grupo</h3>
+            <form id="addGroupForm">
+                <div class="form-group">
+                    <label>Categoria:</label>
+                    <input type="text" id="addGroupCategory" readonly style="background: #e0e0e0;">
+                </div>
+                <div class="form-group">
+                    <label>Novos Grupos (um por linha):</label>
+                    <textarea id="newGroups" placeholder="4Bet pre flop&#10;Cold 4Bet&#10;Squeeze" required></textarea>
+                </div>
+                <button type="submit">Adicionar Grupos</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar Posição -->
+    <div id="addPositionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Adicionar Posições</h3>
+            <form id="addPositionForm">
+                <div class="form-group">
+                    <label>Categoria:</label>
+                    <input type="text" id="addPositionCategory" readonly style="background: #e0e0e0;">
+                </div>
+                <div class="form-group">
+                    <label>Grupo:</label>
+                    <input type="text" id="addPositionGroup" readonly style="background: #e0e0e0;">
+                </div>
+                <div class="form-group">
+                    <label>Novas Posições (uma por linha):</label>
+                    <textarea id="newPositions" placeholder="BB&#10;EP&#10;MP" required></textarea>
+                </div>
+                <button type="submit">Adicionar Posições</button>
             </form>
         </div>
     </div>
@@ -595,11 +728,17 @@
             
             // Botões principais
             const newCategoryBtn = document.getElementById('newCategoryBtn');
+            const editCategoryBtn = document.getElementById('editCategoryBtn');
             const saveRangeBtn = document.getElementById('saveRangeBtn');
             const clearGridBtn = document.getElementById('clearGridBtn');
+            const addGroupBtn = document.getElementById('addGroupBtn');
+            const addPositionBtn = document.getElementById('addPositionBtn');
             
             if (newCategoryBtn) {
                 newCategoryBtn.addEventListener('click', openCategoryModal);
+            }
+            if (editCategoryBtn) {
+                editCategoryBtn.addEventListener('click', openEditCategoryModal);
             }
             if (saveRangeBtn) {
                 saveRangeBtn.addEventListener('click', saveCurrentRange);
@@ -607,24 +746,41 @@
             if (clearGridBtn) {
                 clearGridBtn.addEventListener('click', clearGrid);
             }
-
-            // Modal
-            const closeBtn = document.querySelector('.close');
-            const categoryForm = document.getElementById('categoryForm');
-            const modal = document.getElementById('categoryModal');
-            
-            if (closeBtn) {
-                closeBtn.addEventListener('click', closeCategoryModal);
+            if (addGroupBtn) {
+                addGroupBtn.addEventListener('click', openAddGroupModal);
             }
+            if (addPositionBtn) {
+                addPositionBtn.addEventListener('click', openAddPositionModal);
+            }
+
+            // Modal handlers
+            const closeBtns = document.querySelectorAll('.close');
+            const categoryForm = document.getElementById('categoryForm');
+            const addGroupForm = document.getElementById('addGroupForm');
+            const addPositionForm = document.getElementById('addPositionForm');
+            const modals = document.querySelectorAll('.modal');
+            
+            closeBtns.forEach(btn => {
+                btn.addEventListener('click', closeAllModals);
+            });
+            
             if (categoryForm) {
-                categoryForm.addEventListener('submit', createNewCategory);
+                categoryForm.addEventListener('submit', handleCategoryForm);
+            }
+            if (addGroupForm) {
+                addGroupForm.addEventListener('submit', handleAddGroup);
+            }
+            if (addPositionForm) {
+                addPositionForm.addEventListener('submit', handleAddPosition);
             }
             
             // Fecha modal clicando fora
             window.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    closeCategoryModal();
-                }
+                modals.forEach(modal => {
+                    if (e.target === modal) {
+                        closeAllModals();
+                    }
+                });
             });
         }
 
@@ -689,29 +845,74 @@
             }
         }
 
-        // Abre modal de categoria
+        // Abre modal de categoria (nova ou editar)
+        let editingCategoryIndex = -1;
+
         function openCategoryModal() {
-            const modal = document.getElementById('categoryModal');
-            if (modal) {
-                modal.style.display = 'block';
+            editingCategoryIndex = -1;
+            document.getElementById('modalTitle').textContent = 'Nova Categoria';
+            document.getElementById('submitCategoryBtn').textContent = 'Criar Categoria';
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryModal').style.display = 'block';
+        }
+
+        function openEditCategoryModal() {
+            const categoryIndex = document.getElementById('categorySelect').value;
+            if (!categoryIndex) {
+                alert('Selecione uma categoria para editar.');
+                return;
             }
+
+            editingCategoryIndex = parseInt(categoryIndex);
+            const category = categories[editingCategoryIndex];
+            
+            document.getElementById('modalTitle').textContent = 'Editar Categoria';
+            document.getElementById('submitCategoryBtn').textContent = 'Salvar Alterações';
+            document.getElementById('categoryName').value = category.name;
+            document.getElementById('categoryGroups').value = category.groups.join('\n');
+            document.getElementById('categoryPositions').value = category.positions.join('\n');
+            document.getElementById('categoryModal').style.display = 'block';
+        }
+
+        function openAddGroupModal() {
+            const categoryIndex = document.getElementById('categorySelect').value;
+            if (!categoryIndex) {
+                alert('Selecione uma categoria primeiro.');
+                return;
+            }
+            
+            const category = categories[categoryIndex];
+            document.getElementById('addGroupCategory').value = category.name;
+            document.getElementById('addGroupModal').style.display = 'block';
+        }
+
+        function openAddPositionModal() {
+            const categoryIndex = document.getElementById('categorySelect').value;
+            const group = document.getElementById('groupSelect').value;
+            
+            if (!categoryIndex || !group) {
+                alert('Selecione uma categoria e um grupo primeiro.');
+                return;
+            }
+            
+            const category = categories[categoryIndex];
+            document.getElementById('addPositionCategory').value = category.name;
+            document.getElementById('addPositionGroup').value = group;
+            document.getElementById('addPositionModal').style.display = 'block';
         }
 
         // Fecha modal de categoria
-        function closeCategoryModal() {
-            const modal = document.getElementById('categoryModal');
-            const form = document.getElementById('categoryForm');
-            
-            if (modal) {
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
                 modal.style.display = 'none';
-            }
-            if (form) {
+            });
+            document.querySelectorAll('form').forEach(form => {
                 form.reset();
-            }
+            });
         }
 
-        // Cria nova categoria
-        function createNewCategory(e) {
+        // Manipula formulário de categoria (criar ou editar)
+        function handleCategoryForm(e) {
             e.preventDefault();
             
             const name = document.getElementById('categoryName').value.trim();
@@ -726,12 +927,75 @@
             const groups = groupsText.split('\n').map(g => g.trim()).filter(g => g);
             const positions = positionsText.split('\n').map(p => p.trim()).filter(p => p);
             
-            categories.push({ name, groups, positions });
+            if (editingCategoryIndex >= 0) {
+                // Editando categoria existente
+                categories[editingCategoryIndex] = { name, groups, positions };
+                alert('Categoria atualizada com sucesso!');
+            } else {
+                // Criando nova categoria
+                categories.push({ name, groups, positions });
+                alert('Categoria criada com sucesso!');
+            }
+            
             saveData();
             updateCategorySelect();
-            closeCategoryModal();
+            closeAllModals();
+        }
+
+        // Adiciona novos grupos
+        function handleAddGroup(e) {
+            e.preventDefault();
             
-            alert('Categoria criada com sucesso!');
+            const categoryIndex = document.getElementById('categorySelect').value;
+            const newGroupsText = document.getElementById('newGroups').value.trim();
+            
+            if (!newGroupsText) {
+                alert('Digite pelo menos um grupo.');
+                return;
+            }
+            
+            const newGroups = newGroupsText.split('\n').map(g => g.trim()).filter(g => g);
+            const category = categories[categoryIndex];
+            
+            // Adiciona apenas grupos que não existem
+            newGroups.forEach(group => {
+                if (!category.groups.includes(group)) {
+                    category.groups.push(group);
+                }
+            });
+            
+            saveData();
+            updateGroupSelect();
+            closeAllModals();
+            alert('Grupos adicionados com sucesso!');
+        }
+
+        // Adiciona novas posições
+        function handleAddPosition(e) {
+            e.preventDefault();
+            
+            const categoryIndex = document.getElementById('categorySelect').value;
+            const newPositionsText = document.getElementById('newPositions').value.trim();
+            
+            if (!newPositionsText) {
+                alert('Digite pelo menos uma posição.');
+                return;
+            }
+            
+            const newPositions = newPositionsText.split('\n').map(p => p.trim()).filter(p => p);
+            const category = categories[categoryIndex];
+            
+            // Adiciona apenas posições que não existem
+            newPositions.forEach(position => {
+                if (!category.positions.includes(position)) {
+                    category.positions.push(position);
+                }
+            });
+            
+            saveData();
+            updatePositionSelect();
+            closeAllModals();
+            alert('Posições adicionadas com sucesso!');
         }
 
         // Salva range atual
@@ -739,6 +1003,7 @@
             const categoryIndex = document.getElementById('categorySelect').value;
             const group = document.getElementById('groupSelect').value;
             const position = document.getElementById('positionSelect').value;
+            const obs = document.getElementById('obsTextarea').value.trim();
             
             if (!categoryIndex || !group || !position) {
                 alert('Por favor, selecione categoria, grupo e posição antes de salvar.');
@@ -758,6 +1023,7 @@
                 group: group,
                 position: position,
                 hands: Object.assign({}, gridState),
+                obs: obs,
                 timestamp: new Date().toISOString()
             });
             
@@ -782,6 +1048,12 @@
                 document.getElementById('groupSelect').value = range.group;
                 updatePositionSelect();
                 document.getElementById('positionSelect').value = range.position;
+            }
+            
+            // Carrega observações
+            const obsTextarea = document.getElementById('obsTextarea');
+            if (obsTextarea && range.obs) {
+                obsTextarea.value = range.obs;
             }
         }
 
@@ -814,23 +1086,130 @@
                 return;
             }
             
+            // Agrupa ranges por categoria e grupo
+            const groupedRanges = {};
+            
             savedRanges.forEach((range, index) => {
-                const item = document.createElement('div');
-                item.className = 'range-item';
+                const category = range.category;
+                const group = range.group;
                 
-                item.innerHTML = `
-                    <div class="range-info">
-                        <h4>${range.name}</h4>
-                        <p>Salvo em: ${new Date(range.timestamp).toLocaleString('pt-BR')}</p>
-                    </div>
-                    <div class="range-actions">
-                        <button class="btn-small" onclick="loadRange(${index})">Carregar</button>
-                        <button class="btn-small" onclick="deleteRange(${index})">Excluir</button>
-                    </div>
+                if (!groupedRanges[category]) {
+                    groupedRanges[category] = {};
+                }
+                
+                if (!groupedRanges[category][group]) {
+                    groupedRanges[category][group] = [];
+                }
+                
+                groupedRanges[category][group].push({ range, index });
+            });
+            
+            // Cria HTML agrupado
+            Object.keys(groupedRanges).forEach(categoryName => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category-group';
+                
+                // Header da categoria
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.innerHTML = `
+                    <h3>📁 ${categoryName}</h3>
+                    <span class="category-toggle">▼</span>
                 `;
                 
-                container.appendChild(item);
+                // Content da categoria
+                const categoryContent = document.createElement('div');
+                categoryContent.className = 'category-content';
+                
+                // Event listener para expandir/contrair categoria
+                categoryHeader.addEventListener('click', function() {
+                    const isExpanded = categoryContent.classList.contains('expanded');
+                    const toggle = this.querySelector('.category-toggle');
+                    
+                    if (isExpanded) {
+                        categoryContent.classList.remove('expanded');
+                        toggle.textContent = '▶';
+                        toggle.style.transform = 'rotate(0deg)';
+                    } else {
+                        categoryContent.classList.add('expanded');
+                        toggle.textContent = '▼';
+                        toggle.style.transform = 'rotate(0deg)';
+                    }
+                });
+                
+                // Cria grupos dentro da categoria
+                Object.keys(groupedRanges[categoryName]).forEach(groupName => {
+                    const groupSection = document.createElement('div');
+                    groupSection.className = 'group-section';
+                    
+                    // Header do grupo
+                    const groupHeader = document.createElement('div');
+                    groupHeader.className = 'group-header';
+                    groupHeader.innerHTML = `
+                        <h4>📊 ${groupName}</h4>
+                        <span class="group-toggle">▼</span>
+                    `;
+                    
+                    // Content do grupo
+                    const groupContent = document.createElement('div');
+                    groupContent.className = 'group-content';
+                    
+                    // Event listener para expandir/contrair grupo
+                    groupHeader.addEventListener('click', function() {
+                        const isExpanded = groupContent.classList.contains('expanded');
+                        const toggle = this.querySelector('.group-toggle');
+                        
+                        if (isExpanded) {
+                            groupContent.classList.remove('expanded');
+                            toggle.textContent = '▶';
+                            toggle.style.transform = 'rotate(0deg)';
+                        } else {
+                            groupContent.classList.add('expanded');
+                            toggle.textContent = '▼';
+                            toggle.style.transform = 'rotate(0deg)';
+                        }
+                    });
+                    
+                    // Adiciona ranges do grupo
+                    groupedRanges[categoryName][groupName].forEach(({ range, index }) => {
+                        const rangeItem = document.createElement('div');
+                        rangeItem.className = 'range-item';
+                        
+                        const obsText = range.obs ? 
+                            `<p style="font-style: italic; color: #ffeb3b; margin-top: 5px; font-size: 0.85rem;">💭 ${range.obs}</p>` : '';
+                        
+                        rangeItem.innerHTML = `
+                            <div class="range-info">
+                                <h4 style="color: #90CAF9; margin-bottom: 5px;">${range.position}</h4>
+                                <p style="font-size: 0.8rem; opacity: 0.7;">Salvo em: ${new Date(range.timestamp).toLocaleString('pt-BR')}</p>
+                                ${obsText}
+                            </div>
+                            <div class="range-actions">
+                                <button class="btn-small" onclick="loadRange(${index})" style="background: #4CAF50;">Carregar</button>
+                                <button class="btn-small" onclick="deleteRange(${index})" style="background: #F44336;">Excluir</button>
+                            </div>
+                        `;
+                        
+                        groupContent.appendChild(rangeItem);
+                    });
+                    
+                    groupSection.appendChild(groupHeader);
+                    groupSection.appendChild(groupContent);
+                    categoryContent.appendChild(groupSection);
+                });
+                
+                categoryDiv.appendChild(categoryHeader);
+                categoryDiv.appendChild(categoryContent);
+                container.appendChild(categoryDiv);
             });
+            
+            // Expand first category by default
+            const firstCategory = container.querySelector('.category-content');
+            const firstToggle = container.querySelector('.category-toggle');
+            if (firstCategory && firstToggle) {
+                firstCategory.classList.add('expanded');
+                firstToggle.textContent = '▼';
+            }
         }
 
         // Torna funções globais para uso nos botões HTML
