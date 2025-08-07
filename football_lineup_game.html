@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escalação por Letra - Futebol</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #00a651, #228b22);
+            color: white;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .screen {
+            display: none;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e55a2e;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        .player-input {
+            margin-bottom: 15px;
+        }
+
+        .game-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .current-letter {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffdd00;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .position {
+            font-size: 20px;
+            margin: 10px 0;
+            color: #87ceeb;
+        }
+
+        .current-player {
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .field {
+            background: linear-gradient(90deg, #228b22 0%, #32cd32 50%, #228b22 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            min-height: 300px;
+            border: 2px solid white;
+        }
+
+        .field-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 13px;
+            background-image: 
+                linear-gradient(white 1px, transparent 1px),
+                linear-gradient(90deg, white 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.1;
+        }
+
+        .formation {
+            display: grid;
+            grid-template-rows: 1fr 1fr 1fr 1fr;
+            height: 100%;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .position-slot {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 8px;
+            border-radius: 20px;
+            min-width: 60px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .position-slot.filled {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .position-slot.current {
+            background: #ff6b35;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .scoreboard {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .player-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .player-lineup {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .lineup-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .winner {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .response-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .position-slot {
+                min-width: 50px;
+                font-size: 9px;
+                padding: 6px;
+            }
+            
+            .current-letter {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Escalação por Letra</h1>
+            <p>Monte seu time com a letra sorteada!</p>
+        </div>
+
+        <!-- Tela 1: Número de jogadores -->
+        <div class="screen active" id="players-count-screen">
+            <div class="form-group">
+                <label for="playersCount">Quantos jogadores?</label>
+                <input type="number" id="playersCount" min="2" max="8" value="2" placeholder="2 a 8 jogadores">
+            </div>
+            <button class="btn btn-primary" onclick="setPlayersCount()">Continuar</button>
+        </div>
+
+        <!-- Tela 2: Nomes dos jogadores -->
+        <div class="screen" id="players-names-screen">
+            <h3>Digite os nomes dos jogadores:</h3>
+            <div id="players-inputs"></div>
+            <button class="btn btn-primary" onclick="startGame()">Começar Jogo</button>
+        </div>
+
+        <!-- Tela 3: Jogo -->
+        <div class="screen" id="game-screen">
+            <div class="game-info">
+                <div class="current-letter" id="currentLetter">A</div>
+                <div class="position" id="currentPosition">Goleiro</div>
+                <div class="current-player" id="currentPlayer">Vez de: Jogador 1</div>
+            </div>
+
+            <div class="field">
+                <div class="field-lines"></div>
+                <div class="formation">
+                    <div class="line">
+                        <div class="position-slot" id="pos-0">GOL</div>
+                    </div>
+                    <div class="line">
+                        <div class="position-slot" id="pos-1">ZD</div>
+                        <div class="position-slot" id="pos-2">ZC1</div>
+                        <div class="position-slot" id="pos-3">ZC2</div>
+                        <div class="position-slot" id="pos-4">ZE</div>
+                    </div>
+                    <div class="line">
+                        <div class="position-slot" id="pos-5">MC</div>
+                        <div class="position-slot" id="pos-6">MD</div>
+                        <div class="position-slot" id="pos-7">ME</div>
+                    </div>
+                    <div class="line">
+                        <div class="position-slot" id="pos-8">AD</div>
+                        <div class="position-slot" id="pos-9">CA</div>
+                        <div class="position-slot" id="pos-10">AE</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nome do jogador:</label>
+                <input type="text" id="playerNameInput" placeholder="Digite o nome do jogador...">
+            </div>
+
+            <div class="response-options">
+                <button class="btn btn-secondary btn-small" onclick="playerKnows(true)">✅ Sei</button>
+                <button class="btn btn-secondary btn-small" onclick="playerKnows(false)">❌ Não sei</button>
+            </div>
+
+            <button class="btn btn-primary" onclick="nextTurn()" id="nextBtn" style="display:none;">Próximo</button>
+        </div>
+
+        <!-- Tela 4: Resultados -->
+        <div class="screen" id="results-screen">
+            <h3>🏆 Resultados Finais</h3>
+            <div id="finalResults"></div>
+            <button class="btn btn-primary" onclick="restart()">Jogar Novamente</button>
+            <button class="btn btn-secondary" onclick="showAllLineups()">Ver Todas Escalações</button>
+        </div>
+
+        <!-- Tela 5: Ver escalações -->
+        <div class="screen" id="lineups-screen">
+            <h3>📋 Escalações Completas</h3>
+            <div id="allLineups"></div>
+            <button class="btn btn-secondary" onclick="backToResults()">Voltar</button>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let players = [];
+        let currentPlayerIndex = 0;
+        let currentPositionIndex = 0;
+        let currentLetter = '';
+        let gameData = {};
+        
+        const positions = [
+            'Goleiro', 'Zagueiro Direito', 'Zagueiro Central 1', 'Zagueiro Central 2', 'Zagueiro Esquerdo',
+            'Meio Campo Central', 'Meio Campo Direito', 'Meio Campo Esquerdo',
+            'Atacante Direito', 'Centroavante', 'Atacante Esquerdo'
+        ];
+
+        const positionAbbr = ['GOL', 'ZD', 'ZC1', 'ZC2', 'ZE', 'MC', 'MD', 'ME', 'AD', 'CA', 'AE'];
+        
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+        function setPlayersCount() {
+            const count = parseInt(document.getElementById('playersCount').value);
+            if (count < 2 || count > 8) {
+                alert('Número de jogadores deve ser entre 2 e 8');
+                return;
+            }
+            
+            createPlayerInputs(count);
+            showScreen('players-names-screen');
+        }
+
+        function createPlayerInputs(count) {
+            const container = document.getElementById('players-inputs');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const div = document.createElement('div');
+                div.className = 'player-input';
+                div.innerHTML = `
+                    <label>Jogador ${i + 1}:</label>
+                    <input type="text" id="player${i}" placeholder="Nome do jogador ${i + 1}" required>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function startGame() {
+            players = [];
+            const playerInputs = document.querySelectorAll('#players-inputs input');
+            
+            playerInputs.forEach((input, index) => {
+                if (input.value.trim()) {
+                    players.push({
+                        name: input.value.trim(),
+                        lineup: {},
+                        score: 0
+                    });
+                }
+            });
+
+            if (players.length < 2) {
+                alert('Digite pelo menos 2 nomes de jogadores');
+                return;
+            }
+
+            initializeGame();
+            showScreen('game-screen');
+        }
+
+        function initializeGame() {
+            currentPlayerIndex = 0;
+            currentPositionIndex = 0;
+            
+            // Inicializar dados do jogo
+            players.forEach(player => {
+                player.lineup = {};
+                player.score = 0;
+            });
+            
+            gameData = {};
+            positions.forEach((pos, index) => {
+                gameData[index] = {
+                    letter: getRandomLetter(),
+                    playerOrder: shuffleArray([...Array(players.length).keys()])
+                };
+            });
+            
+            startPosition();
+        }
+
+        function startPosition() {
+            if (currentPositionIndex >= positions.length) {
+                endGame();
+                return;
+            }
+
+            const positionData = gameData[currentPositionIndex];
+            currentLetter = positionData.letter;
+            currentPlayerIndex = positionData.playerOrder[0];
+            
+            updateDisplay();
+            updateField();
+        }
+
+        function updateDisplay() {
+            document.getElementById('currentLetter').textContent = currentLetter;
+            document.getElementById('currentPosition').textContent = positions[currentPositionIndex];
+            document.getElementById('currentPlayer').textContent = `Vez de: ${players[currentPlayerIndex].name}`;
+            document.getElementById('playerNameInput').value = '';
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        function updateField() {
+            // Reset all positions
+            for (let i = 0; i < positions.length; i++) {
+                const slot = document.getElementById(`pos-${i}`);
+                slot.className = 'position-slot';
+                if (players.some(p => p.lineup[i])) {
+                    slot.className += ' filled';
+                }
+            }
+            
+            // Highlight current position
+            const currentSlot = document.getElementById(`pos-${currentPositionIndex}`);
+            currentSlot.className = 'position-slot current';
+        }
+
+        function playerKnows(knows) {
+            const playerName = document.getElementById('playerNameInput').value.trim();
+            
+            if (knows && !playerName) {
+                alert('Digite o nome do jogador!');
+                return;
+            }
+
+            if (knows) {
+                // Player conseguiu responder
+                players[currentPlayerIndex].lineup[currentPositionIndex] = playerName;
+                players[currentPlayerIndex].score++;
+                
+                // Marcar posição como preenchida
+                const slot = document.getElementById(`pos-${currentPositionIndex}`);
+                slot.className = 'position-slot filled';
+                slot.textContent = positionAbbr[currentPositionIndex] + ' ✓';
+            } else {
+                // Player não soube
+                players[currentPlayerIndex].lineup[currentPositionIndex] = 'Não soube';
+            }
+
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+
+        function nextTurn() {
+            const positionData = gameData[currentPositionIndex];
+            const currentOrderIndex = positionData.playerOrder.indexOf(currentPlayerIndex);
+            
+            if (currentOrderIndex < positionData.playerOrder.length - 1) {
+                // Próximo jogador na mesma posição
+                currentPlayerIndex = positionData.playerOrder[currentOrderIndex + 1];
+                updateDisplay();
+            } else {
+                // Próxima posição
+                currentPositionIndex++;
+                startPosition();
+            }
+        }
+
+        function endGame() {
+            calculateFinalResults();
+            showScreen('results-screen');
+        }
+
+        function calculateFinalResults() {
+            // Ordenar players por pontuação
+            players.sort((a, b) => b.score - a.score);
+            
+            const resultsContainer = document.getElementById('finalResults');
+            resultsContainer.innerHTML = '';
+            
+            // Winner announcement
+            if (players[0].score > 0) {
+                const winner = document.createElement('div');
+                winner.className = 'winner';
+                winner.innerHTML = `🏆 Vencedor: ${players[0].name}<br>Pontuação: ${players[0].score}/11`;
+                resultsContainer.appendChild(winner);
+            }
+            
+            // Scoreboard
+            const scoreboard = document.createElement('div');
+            scoreboard.className = 'scoreboard';
+            scoreboard.innerHTML = '<h4>📊 Classificação:</h4>';
+            
+            players.forEach((player, index) => {
+                const playerScore = document.createElement('div');
+                playerScore.className = 'player-score';
+                playerScore.innerHTML = `
+                    <span>${index + 1}º ${player.name}</span>
+                    <span>${player.score}/11</span>
+                `;
+                scoreboard.appendChild(playerScore);
+            });
+            
+            resultsContainer.appendChild(scoreboard);
+        }
+
+        function showAllLineups() {
+            const container = document.getElementById('allLineups');
+            container.innerHTML = '';
+            
+            players.forEach(player => {
+                const lineupDiv = document.createElement('div');
+                lineupDiv.className = 'player-lineup';
+                lineupDiv.innerHTML = `<h4>⚽ ${player.name} (${player.score}/11)</h4>`;
+                
+                positions.forEach((position, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'lineup-item';
+                    const playerResponse = player.lineup[index] || 'Não jogou';
+                    const letter = gameData[index] ? gameData[index].letter : '?';
+                    item.innerHTML = `
+                        <span>${position} (${letter})</span>
+                        <span>${playerResponse}</span>
+                    `;
+                    lineupDiv.appendChild(item);
+                });
+                
+                container.appendChild(lineupDiv);
+            });
+            
+            showScreen('lineups-screen');
+        }
+
+        function backToResults() {
+            showScreen('results-screen');
+        }
+
+        function restart() {
+            showScreen('players-count-screen');
+            document.getElementById('playersCount').value = '2';
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function getRandomLetter() {
+            return letters[Math.floor(Math.random() * letters.length)];
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Permitir Enter para confirmar respostas
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('playerNameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    playerKnows(true);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
